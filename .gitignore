@@ -32,6 +32,26 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
+
+# Agents and Reports
+.agents/
+graphify-out/
+*.md
+!README.md
+!QUICKSTART.md
+MoneyAI_Agent_Action_Report.md
+roo-preview-*.md
+
+# Firebase Keys (Safety first)
+service-account.json
+firebase-admin-key.json
+*.key.json
+serviceAccountKey.json
+
+# Firebase service account keys — NEVER commit these
+*-firebase-adminsdk-*.json
+serviceAccountKey.json
 
 # vercel
 .vercel

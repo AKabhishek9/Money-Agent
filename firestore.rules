@@ -1,0 +1,70 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    function validAmount() {
+      return request.resource.data.amount is number
+        && request.resource.data.amount > 0;
+    }
+
+    // Users can only read/write their own user document
+    match /users/{userId} {
+      allow read, write: if isAuthenticated() && isOwner(userId);
+    }
+
+    // Sections — only the owner can access their sections
+    match /sections/{sectionId} {
+      allow read: if isAuthenticated() && isOwner(resource.data.userId);
+      allow create: if isAuthenticated()
+        && isOwner(request.resource.data.userId)
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 50;
+      allow update: if isAuthenticated() && isOwner(resource.data.userId);
+      allow delete: if isAuthenticated() && isOwner(resource.data.userId);
+    }
+
+    // Transactions — only the owner can access their transactions
+    match /transactions/{txId} {
+      allow read: if isAuthenticated() && isOwner(resource.data.userId);
+      allow create: if isAuthenticated()
+        && isOwner(request.resource.data.userId)
+        && validAmount()
+        && request.resource.data.type in ['income', 'expense', 'transfer', 'loan'];
+      allow update: if isAuthenticated() && isOwner(resource.data.userId);
+      allow delete: if isAuthenticated() && isOwner(resource.data.userId);
+    }
+
+    // Persons — only the owner can access
+    match /persons/{personId} {
+      allow read: if isAuthenticated() && isOwner(resource.data.userId);
+      allow create: if isAuthenticated()
+        && isOwner(request.resource.data.userId)
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0;
+      allow update: if isAuthenticated() && isOwner(resource.data.userId);
+      allow delete: if isAuthenticated() && isOwner(resource.data.userId);
+    }
+
+    // Vault — only the owner, extra strict
+    match /vault/{itemId} {
+      allow read, write: if isAuthenticated() && isOwner(resource.data.userId);
+      allow create: if isAuthenticated() && isOwner(request.resource.data.userId);
+    }
+
+    // Deny everything else
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
