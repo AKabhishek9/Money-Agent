@@ -40,10 +40,11 @@ export default function VaultPage() {
         items.map(async (item) => {
           const decryptedData: Record<string, string> = {};
           for (const [key, val] of Object.entries(item.data || {})) {
-            if (sensitiveFields.includes(key) && val) {
-              decryptedData[key] = await decryptField(val, user.uid);
+            const stringVal = String(val);
+            if (sensitiveFields.includes(key) && stringVal) {
+              decryptedData[key] = await decryptField(stringVal, user.uid);
             } else {
-              decryptedData[key] = val;
+              decryptedData[key] = stringVal;
             }
           }
           return { ...item, data: decryptedData };
