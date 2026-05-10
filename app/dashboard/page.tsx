@@ -8,7 +8,7 @@ import Link from 'next/link';
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const { sections, transactions, loading, error, refresh } = useData();
+  const { sections, transactions, loading, error, isError, refresh } = useData();
 
   const totalBalance = sections.reduce((s, sec) => s + sec.balance, 0);
   const now = new Date();
@@ -34,14 +34,6 @@ export default function DashboardPage() {
     );
   }
 
-  if (error) return (
-    <div className="flex flex-col items-center justify-center py-24 gap-4">
-      <p className="text-base font-medium" style={{ color: 'var(--accent-danger)' }}>
-        Failed to load data. Please check your internet connection.
-      </p>
-      <button onClick={refresh} className="btn-primary text-sm px-6">Try Again</button>
-    </div>
-  );
 
   const stats = [
     { label: 'Total Balance', value: formatCurrency(totalBalance), icon: Wallet, color: '#6c5ce7', gradient: 'var(--gradient-primary)' },
@@ -72,6 +64,22 @@ export default function DashboardPage() {
           + Add Transaction
         </Link>
       </div>
+      
+      {isError && (
+        <div className="p-4 rounded-xl flex items-center justify-between gap-4 animate-fade-in" 
+          style={{ background: 'rgba(255, 107, 107, 0.1)', border: '1px solid rgba(255, 107, 107, 0.2)' }}>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'var(--accent-danger)' }}>
+              <TrendingDown size={20} className="text-white" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Sync Error</p>
+              <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>Could not fetch latest data. Please check your connection or ad-blocker.</p>
+            </div>
+          </div>
+          <button onClick={refresh} className="btn-secondary text-xs px-4 py-2">Retry</button>
+        </div>
+      )}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

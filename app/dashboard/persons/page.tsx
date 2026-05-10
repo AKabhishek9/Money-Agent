@@ -11,7 +11,7 @@ import { Plus, X, Trash2, UserCircle } from 'lucide-react';
 
 export default function PersonsPage() {
   const { user } = useAuth();
-  const { persons, loading, error, refresh } = useData();
+  const { persons, loading, error, isError, refresh } = useData();
 
   const [showModal, setShowModal] = useState(false);
   const [name, setName] = useState('');
@@ -54,14 +54,7 @@ export default function PersonsPage() {
 
   if (loading) return <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">{[1,2,3].map(i => <div key={i} className="skeleton h-32 rounded-xl" />)}</div>;
 
-  if (error) return (
-    <div className="flex flex-col items-center justify-center py-24 gap-4">
-      <p className="text-base font-medium" style={{ color: 'var(--accent-danger)' }}>
-        Failed to load data. Please check your internet connection.
-      </p>
-      <button onClick={refresh} className="btn-primary text-sm px-6">Try Again</button>
-    </div>
-  );
+
 
 
   const personsList = persons || [];
@@ -78,6 +71,22 @@ export default function PersonsPage() {
           <Plus size={16} /> Add Person
         </button>
       </div>
+
+      {isError && (
+        <div className="p-4 rounded-xl flex items-center justify-between gap-4 animate-fade-in" 
+          style={{ background: 'rgba(255, 107, 107, 0.1)', border: '1px solid rgba(255, 107, 107, 0.2)' }}>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'var(--accent-danger)' }}>
+              <UserCircle size={20} className="text-white" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Sync Error</p>
+              <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>Could not fetch latest data. Please check your connection or ad-blocker.</p>
+            </div>
+          </div>
+          <button onClick={refresh} className="btn-secondary text-xs px-4 py-2">Retry</button>
+        </div>
+      )}
 
       {personsList.length === 0 ? (
         <div className="text-center py-16 stat-card">

@@ -10,7 +10,7 @@ import { Plus, X, Trash2, Shield, CreditCard, FileText, Eye, EyeOff, Lock } from
 
 export default function VaultPage() {
   const { user } = useAuth();
-  const { vault: items, loading, error, refresh } = useData();
+  const { vault: items, loading, error, isError, refresh } = useData();
 
   const [showModal, setShowModal] = useState(false);
   const [vaultType, setVaultType] = useState<VaultItemType>('bank');
@@ -103,14 +103,7 @@ export default function VaultPage() {
 
   if (loading) return <div className="space-y-4">{[1,2,3].map(i => <div key={i} className="skeleton h-32 rounded-xl" />)}</div>;
 
-  if (error) return (
-    <div className="flex flex-col items-center justify-center py-24 gap-4">
-      <p className="text-base font-medium" style={{ color: 'var(--accent-danger)' }}>
-        Failed to load data. Please check your internet connection.
-      </p>
-      <button onClick={refresh} className="btn-primary text-sm px-6">Try Again</button>
-    </div>
-  );
+
 
 
   const itemsList = decryptedItems || [];
@@ -128,6 +121,22 @@ export default function VaultPage() {
           <Plus size={16} /> Add Item
         </button>
       </div>
+
+      {isError && (
+        <div className="p-4 rounded-xl flex items-center justify-between gap-4 animate-fade-in" 
+          style={{ background: 'rgba(255, 107, 107, 0.1)', border: '1px solid rgba(255, 107, 107, 0.2)' }}>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'var(--accent-danger)' }}>
+              <Shield size={20} className="text-white" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Sync Error</p>
+              <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>Could not fetch latest data. Please check your connection or ad-blocker.</p>
+            </div>
+          </div>
+          <button onClick={refresh} className="btn-secondary text-xs px-4 py-2">Retry</button>
+        </div>
+      )}
 
       {itemsList.length === 0 ? (
         <div className="text-center py-16 stat-card">
