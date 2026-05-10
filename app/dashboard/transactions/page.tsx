@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useData } from '@/contexts/DataContext';
 import ConfirmModal from '@/components/ConfirmModal';
@@ -13,7 +13,7 @@ import { Plus, X, ArrowUpRight, ArrowDownRight, ArrowRightLeft, Search, Filter, 
 
 export default function TransactionsPage() {
   const { user } = useAuth();
-  const { transactions, sections, persons, loading, error, isError, refresh } = useData();
+  const { transactions, sections, persons, loading, error, isError, refresh, txLastDoc } = useData();
   
   const [showModal, setShowModal] = useState(false);
   const [filterType, setFilterType] = useState<string>('all');
@@ -31,9 +31,18 @@ export default function TransactionsPage() {
   const [editingTx, setEditingTx] = useState<Transaction | null>(null);
   const [confirmDeleteTx, setConfirmDeleteTx] = useState<string | null>(null);
   const [lastDoc, setLastDoc] = useState<unknown>(null);
-  const [hasMore, setHasMore] = useState(true);
+  const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [extraTransactions, setExtraTransactions] = useState<Transaction[]>([]);
+
+  // Sync lastDoc and hasMore from initial SWR load
+  useEffect(() => {
+    if (!loading && txLastDoc !== undefined) {
+      setLastDoc(txLastDoc);
+      setHasMore(txLastDoc !== null);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, txLastDoc]);
 
   const handleEdit = (tx: Transaction) => {
     setEditingTx(tx);

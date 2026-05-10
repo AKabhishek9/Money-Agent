@@ -9,6 +9,7 @@ import type { Section, Transaction, Person, VaultItem } from '@/lib/types';
 interface DataContextType {
   sections: Section[];
   transactions: Transaction[];
+  txLastDoc: unknown | null;
   persons: Person[];
   vault: VaultItem[];
   loading: boolean;
@@ -62,6 +63,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo(() => ({
     sections: sections || [],
     transactions: txResult?.data || [],
+    txLastDoc: txResult?.lastDoc ?? null,
     persons: persons || [],
     vault: vault || [],
     loading: (sLoading || tLoading || pLoading || vLoading) && !sections && !txResult && !persons && !vault,

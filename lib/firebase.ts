@@ -5,7 +5,7 @@ import {
   initializeFirestore, 
   type Firestore, 
   persistentLocalCache, 
-  persistentSingleTabManager 
+  persistentMultipleTabManager 
 } from 'firebase/firestore';
 
 const requiredEnvVars = {
@@ -36,9 +36,8 @@ const auth: Auth = getAuth(app);
 
 const db: Firestore = initializeFirestore(app, {
   localCache: persistentLocalCache({
-    tabManager: persistentSingleTabManager()
+    tabManager: persistentMultipleTabManager()
   }),
-  experimentalForceLongPolling: true,
 });
 
 export { auth, db };
