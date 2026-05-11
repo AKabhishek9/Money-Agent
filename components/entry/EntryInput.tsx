@@ -65,8 +65,8 @@ export default function EntryInput({ onAdd, disabled, persons }: EntryInputProps
             background: isIncome
               ? 'var(--color-income-bg)'
               : isExpense
-              ? 'var(--color-expense-bg)'
-              : 'var(--color-surface-2)',
+                ? 'var(--color-expense-bg)'
+                : 'var(--color-surface-2)',
           }}
         >
           <span className="text-sm font-medium truncate" style={{ color: 'var(--color-text-muted)' }}>
@@ -74,8 +74,8 @@ export default function EntryInput({ onAdd, disabled, persons }: EntryInputProps
               (parsed.type === 'expression'
                 ? 'Expression'
                 : parsed.type === 'add'
-                ? 'Income'
-                : 'Expense')}
+                  ? 'Income'
+                  : 'Expense')}
           </span>
           <span
             className="font-mono font-semibold text-sm ml-3 shrink-0"
@@ -83,8 +83,8 @@ export default function EntryInput({ onAdd, disabled, persons }: EntryInputProps
               color: isIncome
                 ? 'var(--color-income)'
                 : isExpense
-                ? 'var(--color-expense)'
-                : 'var(--color-text)',
+                  ? 'var(--color-expense)'
+                  : 'var(--color-text)',
             }}
           >
             {formatAmount(parsed.amount)}
@@ -182,13 +182,12 @@ export default function EntryInput({ onAdd, disabled, persons }: EntryInputProps
           className="flex-1 flex items-center gap-2 rounded-xl px-3 min-w-0"
           style={{
             background: 'var(--color-surface-2)',
-            border: `1px solid ${
-              parsed?.isValid
-                ? isIncome
-                  ? 'var(--color-income)'
-                  : 'var(--color-expense)'
-                : 'var(--color-border)'
-            }`,
+            border: `1px solid ${parsed?.isValid
+              ? isIncome
+                ? 'var(--color-income)'
+                : 'var(--color-expense)'
+              : 'var(--color-border)'
+              }`,
             transition: 'border-color 0.15s',
           }}
         >
@@ -198,7 +197,7 @@ export default function EntryInput({ onAdd, disabled, persons }: EntryInputProps
             value={amountInput}
             onChange={(e) => setAmountInput(e.target.value)}
             onKeyDown={handleKey}
-            placeholder="-1200"
+            placeholder="Amount"
             disabled={disabled || loading}
             className="w-[60%] min-w-0 py-3 text-sm outline-none bg-transparent font-mono"
             style={{
@@ -215,7 +214,7 @@ export default function EntryInput({ onAdd, disabled, persons }: EntryInputProps
             value={noteInput}
             onChange={(e) => setNoteInput(e.target.value)}
             onKeyDown={handleKey}
-            placeholder="ration"
+            placeholder="Note"
             disabled={disabled || loading}
             className="w-[40%] min-w-0 py-3 text-sm outline-none bg-transparent"
             style={{
