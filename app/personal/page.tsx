@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Plus } from 'lucide-react';
 import AuthGuard from '@/components/auth/AuthGuard';
@@ -24,7 +24,9 @@ export default function PersonalPage() {
   return (
     <AuthGuard>
       <AppLayout>
-        <PersonalContent />
+        <Suspense fallback={<Loader label="Loading..." />}>
+          <PersonalContent />
+        </Suspense>
       </AppLayout>
     </AuthGuard>
   );
@@ -169,7 +171,7 @@ function PersonalContent() {
   const handleDelete = async (w: MoneyWindow) => {
     await softDeleteWindow(w.id);
     setDeleteTarget(null);
-    if (windowId === w.id) router.replace('/personal');
+    if (windowId === w.id) router.push('/personal');
     load();
   };
 
@@ -180,12 +182,12 @@ function PersonalContent() {
         <Header
           title={selectedWindow.title}
           showBack
-          onBack={() => router.replace('/personal')}
+          onBack={() => router.push('/personal')}
           rightAction={
             <button
               onClick={() => {
                 updateWindowStore(selectedWindow.id, { archived: true });
-                router.replace('/personal');
+                router.push('/personal');
               }}
               className="p-2 rounded-xl"
               style={{ background: 'var(--color-surface-2)', color: 'var(--color-text-muted)' }}
@@ -198,7 +200,7 @@ function PersonalContent() {
           <WindowView
             window={selectedWindow}
             userId={user!.uid}
-            onBack={() => router.replace('/personal')}
+            onBack={() => router.push('/personal')}
             persons={persons}
           />
         </div>

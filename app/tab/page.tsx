@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Plus, Trash2 } from 'lucide-react';
 import AuthGuard from '@/components/auth/AuthGuard';
@@ -21,7 +21,9 @@ export default function TabPage() {
   return (
     <AuthGuard>
       <AppLayout>
-        <TabContent />
+        <Suspense fallback={<Loader label="Loading..." />}>
+          <TabContent />
+        </Suspense>
       </AppLayout>
     </AuthGuard>
   );
@@ -126,13 +128,13 @@ function TabContent() {
   const handleDeleteTab = async () => {
     if (!tabId) return;
     await deleteTab(tabId);
-    router.replace('/personal');
+    router.push('/personal');
   };
 
   const handleDeleteWindow = async (w: MoneyWindow) => {
     await softDeleteWindow(w.id);
     setDeleteTarget(null);
-    if (windowId === w.id) router.replace(`/tab?t=${tabId}`);
+    if (windowId === w.id) router.push(`/tab?t=${tabId}`);
     load();
   };
 
@@ -152,12 +154,12 @@ function TabContent() {
           title={selectedWindow.title}
           subtitle={tab?.name}
           showBack
-          onBack={() => router.replace(`/tab?t=${tabId}`)}
+          onBack={() => router.push(`/tab?t=${tabId}`)}
           rightAction={
             <button
               onClick={() => {
                 updateWindowStore(selectedWindow.id, { archived: true });
-                router.replace(`/tab?t=${tabId}`);
+                router.push(`/tab?t=${tabId}`);
               }}
               className="p-2 rounded-xl"
               style={{ background: 'var(--color-surface-2)', color: 'var(--color-text-muted)' }}
@@ -170,7 +172,7 @@ function TabContent() {
           <WindowView
             window={selectedWindow}
             userId={user!.uid}
-            onBack={() => router.replace(`/tab?t=${tabId}`)}
+            onBack={() => router.push(`/tab?t=${tabId}`)}
             persons={persons}
           />
         </div>
@@ -184,7 +186,7 @@ function TabContent() {
         title={tab?.name || 'Custom Tab'}
         subtitle={`${tab?.icon || ''} Custom notebook`}
         showBack
-        onBack={() => router.replace('/personal')}
+        onBack={() => router.push('/personal')}
         rightAction={
           <div className="flex gap-1">
             <button

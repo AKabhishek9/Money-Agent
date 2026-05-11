@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { Suspense, useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Plus } from 'lucide-react';
 import AuthGuard from '@/components/auth/AuthGuard';
@@ -21,7 +21,9 @@ export default function PeoplePage() {
   return (
     <AuthGuard>
       <AppLayout>
-        <PeopleContent />
+        <Suspense fallback={<Loader label="Loading..." />}>
+          <PeopleContent />
+        </Suspense>
       </AppLayout>
     </AuthGuard>
   );
@@ -100,7 +102,7 @@ function PeopleContent() {
   const handleDeletePerson = async (p: Person) => {
     await deletePersonStore(p.id);
     setDeleteTarget(null);
-    if (personId === p.id) router.replace('/people');
+    if (personId === p.id) router.push('/people');
     load();
   };
 
@@ -120,7 +122,7 @@ function PeopleContent() {
           title={selectedPerson.name}
           subtitle="Personal Ledger"
           showBack
-          onBack={() => router.replace('/people')}
+          onBack={() => router.push('/people')}
         />
         <div className="flex-1 overflow-hidden flex flex-col">
           <PersonLedger person={selectedPerson} userId={user!.uid} />
