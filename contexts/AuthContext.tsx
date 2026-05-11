@@ -22,7 +22,14 @@ import {
 import { auth } from '@/lib/firebase';
 import { ensureSystemData } from '@/lib/bootstrap';
 import { initializeUserData } from '@/lib/firestore';
-import { hydrateFromFirestore, setupSyncListener, clearLocalData } from '@/lib/sync';
+import {
+  hydrateFromFirestore,
+  setupSyncListener,
+  clearLocalData,
+  startRealtimeSync,
+  stopRealtimeSync,
+  processSyncQueue,
+} from '@/lib/sync';
 import { useStore } from '@/store/useStore';
 
 interface AuthContextType {
@@ -52,7 +59,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (u) {
         await prepareLocalData(u.uid);
+        // Start real-time listeners so changes from other devices appear live
+        startRealtimeSync(u.uid);
       } else {
+        stopRealtimeSync();
         useStore.getState().reset();
       }
 
@@ -63,6 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       unsub();
       cleanupSync();
+      stopRealtimeSync();
     };
   }, []);
 
@@ -108,6 +119,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = useCallback(async () => {
     setError(null);
+    stopRealtimeSync();
     await firebaseSignOut(auth);
     await clearLocalData();
     useStore.getState().reset();
@@ -131,13 +143,18 @@ export function useAuth() {
 
 async function prepareLocalData(userId: string): Promise<void> {
   try {
+    // 1) Flush any pending local writes first (phone may have queued changes)
+    await processSyncQueue();
+    // 2) Pull latest from Firestore into local Dexie
     await hydrateFromFirestore(userId);
+    // 3) Ensure system tabs/windows exist
     await ensureSystemData(userId);
   } catch (error) {
-    console.warn('Local data preparation skipped:', error);
-  } finally {
-    await useStore.getState().init(userId);
+    console.warn('Local data preparation partial failure:', error);
+    // Don't throw — still load what we have locally
   }
+  // Always init store from whatever is in Dexie, even if hydration failed
+  await useStore.getState().init(userId);
 }
 
 function friendlyError(msg: string): string {

@@ -47,6 +47,15 @@ function VaultContent() {
 
   useEffect(() => { load(); }, [load]);
 
+  // Re-fetch vault items when browser tab becomes visible (cross-device sync)
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') load();
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, [load]);
+
   const handleAdd = async (type: VaultType, title: string, fields: Record<string, string>) => {
     if (!user) return;
     const db = getDb();

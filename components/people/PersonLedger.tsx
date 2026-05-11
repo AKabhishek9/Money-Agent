@@ -39,6 +39,23 @@ export default function PersonLedger({ person, userId }: PersonLedgerProps) {
 
   useEffect(() => { load(); }, [load]);
 
+  // Re-fetch entries when browser tab becomes visible (cross-device sync)
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') load();
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible') load();
+    }, 30_000);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility);
+      clearInterval(interval);
+    };
+  }, [load]);
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [entries]);
