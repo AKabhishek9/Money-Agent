@@ -11,7 +11,7 @@ export interface SyncQueueItem {
   retries: number;
 }
 
-export class MoneyAIDb extends Dexie {
+export class MoneyLedgerDb extends Dexie {
   tabs!: Table<Tab, string>;
   windows!: Table<MoneyWindow, string>;
   entries!: Table<Entry, string>;
@@ -21,7 +21,7 @@ export class MoneyAIDb extends Dexie {
   syncQueue!: Table<SyncQueueItem, number>;
 
   constructor() {
-    super('MoneyAI');
+    super('MoneyLedger');
     this.version(1).stores({
       tabs: 'id, userId, type, order',
       windows: 'id, tabId, userId, [userId+tabId], archived, inRecycleBin, monthKey, order',
@@ -34,15 +34,15 @@ export class MoneyAIDb extends Dexie {
   }
 }
 
-let dbInstance: MoneyAIDb | null = null;
+let dbInstance: MoneyLedgerDb | null = null;
 
-export function getDb(): MoneyAIDb {
+export function getDb(): MoneyLedgerDb {
   if (typeof window === 'undefined') {
     throw new Error('Dexie only runs in browser');
   }
 
   if (!dbInstance) {
-    dbInstance = new MoneyAIDb();
+    dbInstance = new MoneyLedgerDb();
   }
 
   return dbInstance;

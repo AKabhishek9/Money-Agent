@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  /* MoneyAI Ledger Dark Theme */
+  /* Money Ledger Dark Theme */
   --color-bg: #0b0b12;
   --color-surface: #111118;
   --color-surface-2: #18181f;

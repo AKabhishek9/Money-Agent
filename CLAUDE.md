@@ -1,6 +1,6 @@
-# MoneyAI — Agent Context
+# Money Ledger — Agent Context
 
-## What is MoneyAI?
+## What is Money Ledger?
 
 An offline-first personal accounting notebook. NOT a banking app, NOT a SaaS dashboard. A digital ledger book that replicates handwritten accounting notebooks with smart calculations.
 

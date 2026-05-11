@@ -14,6 +14,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { localGetEntries } from '@/lib/entries';
 import { useStore } from '@/store/useStore';
 import type { Tab, MoneyWindow } from '@/lib/types';
+import { Archive } from 'lucide-react';
 
 export default function TabPage() {
   return (
@@ -114,14 +115,26 @@ function TabContent() {
   // ── Window detail view ──
   if (selectedWindow) {
     return (
-      <div className="flex flex-col h-screen">
+      <div className="flex flex-col h-[100dvh] overflow-hidden">
         <Header
           title={selectedWindow.title}
           subtitle={tab?.name}
           showBack
           onBack={() => router.replace(`/tab?t=${tabId}`)}
+          rightAction={
+            <button
+              onClick={() => {
+                updateWindowStore(selectedWindow.id, { archived: true });
+                router.replace(`/tab?t=${tabId}`);
+              }}
+              className="p-2 rounded-xl"
+              style={{ background: 'var(--color-surface-2)', color: 'var(--color-text-muted)' }}
+            >
+              <Archive size={20} />
+            </button>
+          }
         />
-        <div className="flex-1 overflow-hidden flex flex-col">
+        <div className="flex-1 min-h-0 flex flex-col">
           <WindowView
             window={selectedWindow}
             userId={user!.uid}

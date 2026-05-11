@@ -28,7 +28,7 @@ export default function WindowCard({
 
   return (
     <div
-      className="relative mx-4 mb-3 rounded-2xl overflow-hidden"
+      className={`relative mx-4 mb-3 rounded-2xl ${showMenu ? 'z-20' : ''}`}
       style={{
         background: 'var(--color-surface)',
         border: `1px solid ${w.pinned ? 'var(--color-accent)' : 'var(--color-border)'}`,
@@ -69,7 +69,7 @@ export default function WindowCard({
         </div>
 
         {/* Total */}
-        <div className="text-right shrink-0">
+        <div className="text-right shrink-0 pr-8">
           <div
             className="font-mono font-bold text-base"
             style={{ color: isPositive ? 'var(--color-income)' : 'var(--color-expense)' }}

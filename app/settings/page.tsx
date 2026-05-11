@@ -76,8 +76,8 @@ function SettingsContent() {
           items={[
             {
               icon: <BookOpen size={18} />,
-              label: 'MoneyAI',
-              value: 'v1.0.0',
+              label: 'Money Ledger',
+              value: 'v1.5.1',
             },
             {
               icon: <Shield size={18} />,
@@ -87,7 +87,7 @@ function SettingsContent() {
             },
             {
               icon: <Info size={18} />,
-              label: 'Your data syncs to your Firebase account',
+              label: 'Your data synced to cloud',
             },
           ]}
         />

@@ -17,6 +17,7 @@ import { localGetEntries } from '@/lib/entries';
 import { getMonthKey, getMonthWindowTitle } from '@/lib/utils';
 import { useStore } from '@/store/useStore';
 import type { Tab, MoneyWindow } from '@/lib/types';
+import { Archive } from 'lucide-react';
 
 export default function PersonalPage() {
   return (
@@ -143,13 +144,25 @@ function PersonalContent() {
   // ── Window detail view ──
   if (selectedWindow) {
     return (
-      <div className="flex flex-col h-screen">
+      <div className="flex flex-col h-[100dvh] overflow-hidden">
         <Header
           title={selectedWindow.title}
           showBack
           onBack={() => router.replace('/personal')}
+          rightAction={
+            <button
+              onClick={() => {
+                updateWindowStore(selectedWindow.id, { archived: true });
+                router.replace('/personal');
+              }}
+              className="p-2 rounded-xl"
+              style={{ background: 'var(--color-surface-2)', color: 'var(--color-text-muted)' }}
+            >
+              <Archive size={20} />
+            </button>
+          }
         />
-        <div className="flex-1 overflow-hidden flex flex-col">
+        <div className="flex-1 min-h-0 flex flex-col">
           <WindowView
             window={selectedWindow}
             userId={user!.uid}
@@ -168,13 +181,22 @@ function PersonalContent() {
         title="Personal"
         subtitle="Your accounting notebook"
         rightAction={
-          <button
-            onClick={() => setShowAddSheet(true)}
-            className="p-2 rounded-xl"
-            style={{ background: 'var(--color-surface-2)', color: 'var(--color-accent)' }}
-          >
-            <Plus size={20} />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => router.push('/archive')}
+              className="p-2 rounded-xl"
+              style={{ background: 'var(--color-surface-2)', color: 'var(--color-text-muted)' }}
+            >
+              <Archive size={20} />
+            </button>
+            <button
+              onClick={() => setShowAddSheet(true)}
+              className="p-2 rounded-xl"
+              style={{ background: 'var(--color-surface-2)', color: 'var(--color-accent)' }}
+            >
+              <Plus size={20} />
+            </button>
+          </div>
         }
       />
 

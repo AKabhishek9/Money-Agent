@@ -18,6 +18,7 @@ import { exportWindowToPDF } from '@/lib/pdf';
 import EntryInput from '@/components/entry/EntryInput';
 import EntryItem from '@/components/entry/EntryItem';
 import EditEntrySheet from './EditEntrySheet';
+import { useRef } from 'react';
 
 interface WindowViewProps {
   window: MoneyWindow;
@@ -30,6 +31,7 @@ export default function WindowView({ window: w, userId, onBack, persons }: Windo
   const [entries, setEntries] = useState<Entry[]>([]);
   const [loading, setLoading] = useState(true);
   const [editEntry, setEditEntry] = useState<Entry | null>(null);
+  const bottomRef = useRef<HTMLDivElement | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -41,6 +43,10 @@ export default function WindowView({ window: w, userId, onBack, persons }: Windo
   }, [w.id]);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [entries]);
 
   const handleAdd = async (
     rawText: string,
@@ -110,7 +116,7 @@ export default function WindowView({ window: w, userId, onBack, persons }: Windo
   }, {});
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full overflow-hidden">
       {/* Totals bar */}
       <div
         className="px-4 py-4 shrink-0"
@@ -165,7 +171,7 @@ export default function WindowView({ window: w, userId, onBack, persons }: Windo
       </div>
 
       {/* Entries list */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto min-h-0">
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <p className="text-sm loading-pulse" style={{ color: 'var(--color-text-muted)' }}>
@@ -212,10 +218,19 @@ export default function WindowView({ window: w, userId, onBack, persons }: Windo
             </div>
           ))
         )}
+        <div ref={bottomRef} />
       </div>
 
       {/* Entry input */}
-      <EntryInput onAdd={handleAdd} persons={persons} />
+      <div
+        className="shrink-0 border-t"
+        style={{
+          borderColor: 'var(--color-border)',
+          background: 'var(--color-background, var(--color-bg))',
+        }}
+      >
+        <EntryInput onAdd={handleAdd} persons={persons} />
+      </div>
 
       {/* Edit sheet */}
       {editEntry && (

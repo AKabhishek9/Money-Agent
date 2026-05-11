@@ -22,7 +22,7 @@ export default function Root() {
       <div className="flex flex-col items-center gap-3">
         <div className="text-3xl">💰</div>
         <div className="text-sm loading-pulse" style={{ color: 'var(--color-text-muted)' }}>
-          Loading MoneyAI…
+          Loading Money Ledger…
         </div>
       </div>
     </div>

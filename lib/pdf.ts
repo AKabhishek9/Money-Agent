@@ -33,7 +33,7 @@ function safeText(text: string): string {
 }
 
 function sanitizeFilename(name: string): string {
-  return safeText(name).replace(/[\\/:*?"<>|]/g, '-').trim() || 'MoneyAI-ledger';
+  return safeText(name).replace(/[\\/:*?"<>|]/g, '-').trim() || 'Money-Ledger';
 }
 
 async function createBasePdf(title: string): Promise<{
@@ -50,7 +50,7 @@ async function createBasePdf(title: string): Promise<{
   const { width } = page.getSize();
 
   page.drawRectangle({ x: 0, y: 792, width, height: 50, color: rgb(0.49, 0.43, 0.97) });
-  page.drawText('MoneyAI', { x: 40, y: 812, size: 14, font: boldFont, color: rgb(1, 1, 1) });
+  page.drawText('Money Ledger', { x: 40, y: 812, size: 14, font: boldFont, color: rgb(1, 1, 1) });
   page.drawText(safeText(title).slice(0, 72), {
     x: 40,
     y: 796,

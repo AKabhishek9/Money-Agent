@@ -3,10 +3,10 @@ import './globals.css';
 import { AuthProvider } from '@/contexts/AuthContext';
 
 export const metadata: Metadata = {
-  title: 'MoneyAI — Personal Ledger',
+  title: 'Money Ledger - Personal Ledger',
   description: 'Your offline-first smart accounting notebook',
   icons: { icon: '/icon.png' },
-  appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'MoneyAI' },
+  appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'Money Ledger' },
 };
 
 export const viewport: Viewport = {

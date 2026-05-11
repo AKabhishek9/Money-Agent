@@ -28,7 +28,7 @@ export default function PersonCard({
 
   return (
     <div
-      className="relative mx-4 mb-3 rounded-2xl overflow-hidden"
+      className={`relative mx-4 mb-3 rounded-2xl ${showMenu ? 'z-20' : ''}`}
       style={{
         background: 'var(--color-surface)',
         border: '1px solid var(--color-border)',
@@ -69,7 +69,7 @@ export default function PersonCard({
         </div>
 
         {/* Balance */}
-        <div className="text-right shrink-0 mr-6">
+        <div className="text-right shrink-0 mr-8">
           {isZero ? (
             <span className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
               Settled

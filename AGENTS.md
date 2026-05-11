@@ -1,8 +1,8 @@
-# MoneyAI — Agent Replacement Prompt
+# Money Ledger — Agent Replacement Prompt
 
 ## Mission
 
-Replace the old `Money-Agent-main` project files entirely with the new MoneyAI project. The new project is a complete rewrite with a different architecture, schema, and UI.
+Replace the old `Money-Agent-main` project files entirely with the new Money Ledger project. The new project is a complete rewrite with a different architecture, schema, and UI.
 
 ## Step-by-Step Instructions
 
@@ -52,7 +52,7 @@ eslint.config.mjs
 
 ### PHASE 3 — Copy New Files
 
-Copy ALL files from the new MoneyAI project into the repository root, preserving the directory structure:
+Copy ALL files from the new Money Ledger project into the repository root, preserving the directory structure:
 
 ```
 app/
@@ -221,7 +221,7 @@ Existing users of the old app will need to re-enter data.
 
 ## Key Architecture Differences
 
-| Old (Money-Agent) | New (MoneyAI) |
+| Old (Money-Agent) | New (Money Ledger) |
 |---|---|
 | SWR for data fetching | Direct async/await |
 | Form-based entry UI | Natural text input with smart parser |
