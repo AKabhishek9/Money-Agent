@@ -84,27 +84,33 @@ function SearchContent() {
       <Header title="Search" />
 
       {/* Search input */}
-      <div className="px-4 py-3">
+      <div className="px-4 pb-2 pt-1">
         <div
-          className="flex items-center gap-2 px-3 py-3 rounded-2xl"
+          className="surface-card flex min-h-[48px] items-center gap-2 rounded-2xl px-3 py-2 transition-[border-color,box-shadow] duration-200"
           style={{
             background: 'var(--color-surface)',
             border: '1px solid var(--color-border)',
+            boxShadow: query.trim() ? '0 0 0 1px color-mix(in oklab, var(--color-accent) 18%, transparent)' : undefined,
           }}
         >
-          <Search size={18} style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
+          <Search size={18} strokeWidth={2} style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
           <input
             type="text"
             value={query}
             onChange={(e) => handleChange(e.target.value)}
             placeholder="Search entries, notes, amounts…"
-            className="flex-1 text-sm outline-none bg-transparent"
+            className="min-w-0 flex-1 bg-transparent py-2 text-[0.9375rem] outline-none"
             style={{ color: 'var(--color-text)', caretColor: 'var(--color-accent)' }}
             autoFocus
           />
           {query && (
-            <button onClick={() => handleChange('')}>
-              <X size={16} style={{ color: 'var(--color-text-muted)' }} />
+            <button
+              type="button"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-opacity duration-150 active:opacity-70"
+              onClick={() => handleChange('')}
+              aria-label="Clear search"
+            >
+              <X size={18} strokeWidth={2} style={{ color: 'var(--color-text-muted)' }} />
             </button>
           )}
         </div>
@@ -131,44 +137,51 @@ function SearchContent() {
           </p>
         </div>
       ) : (
-        <div>
-          <p className="px-4 py-2 text-xs" style={{ color: 'var(--color-text-muted)' }}>
+        <div className="pb-4">
+          <p className="text-balance-label px-4 pb-2 pt-1">
             {results.length} result{results.length !== 1 ? 's' : ''}
           </p>
-          {results.map((entry) => (
-            <button
-              key={`${entry.kind}-${entry.id}`}
-              type="button"
-              onClick={() => entry.href && router.push(entry.href)}
-              className="flex items-center gap-3 px-4 py-3"
-              style={{ borderBottom: '1px solid var(--color-border)' }}
-            >
-              <div
-                className="w-1 self-stretch rounded-full"
+          <div className="flex flex-col gap-2 px-4">
+            {results.map((entry) => (
+              <button
+                key={`${entry.kind}-${entry.id}`}
+                type="button"
+                onClick={() => entry.href && router.push(entry.href)}
+                className="surface-card flex items-start gap-3 rounded-2xl p-3 text-left transition-[transform,opacity] duration-150 active:scale-[0.99] active:opacity-90"
                 style={{
-                  background: isPositive(entry) ? 'var(--color-income)' : 'var(--color-expense)',
-                  minHeight: 32,
+                  background: 'var(--color-surface)',
+                  border: '1px solid var(--color-border)',
                 }}
-              />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate" style={{ color: 'var(--color-text)' }}>
-                  {entry.title}
-                </p>
-                <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
-                  {entry.subtitle}
-                  {entry.date ? ` · ${formatRelativeDate(entry.date)}` : ''}
-                </p>
-              </div>
-              {entry.amount !== undefined && (
-                <span
-                  className="font-mono font-semibold text-sm"
-                  style={{ color: isPositive(entry) ? 'var(--color-income)' : 'var(--color-expense)' }}
-                >
-                  {formatAmount(entry.amount)}
-                </span>
-              )}
-            </button>
-          ))}
+              >
+                <div
+                  className="mt-1 w-1 shrink-0 self-stretch rounded-full"
+                  style={{
+                    background: isPositive(entry) ? 'var(--color-income)' : 'var(--color-expense)',
+                    minHeight: 28,
+                    opacity: 0.85,
+                  }}
+                  aria-hidden
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold leading-snug tracking-tight" style={{ color: 'var(--color-text)' }}>
+                    {entry.title}
+                  </p>
+                  <p className="mt-1 line-clamp-2 text-xs leading-relaxed" style={{ color: 'var(--color-text-muted)' }}>
+                    {entry.subtitle}
+                    {entry.date ? ` · ${formatRelativeDate(entry.date)}` : ''}
+                  </p>
+                </div>
+                {entry.amount !== undefined && (
+                  <span
+                    className="amount-mono shrink-0 text-sm font-semibold tabular-nums"
+                    style={{ color: isPositive(entry) ? 'var(--color-income)' : 'var(--color-expense)' }}
+                  >
+                    {formatAmount(entry.amount)}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>

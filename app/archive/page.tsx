@@ -90,22 +90,34 @@ function ArchiveContent() {
     <div>
       <Header title="Archive & Trash" />
 
-      {/* Tab switch */}
-      <div className="flex gap-2 px-4 py-3">
-        {(['archive', 'trash'] as const).map((v) => (
-          <button
-            key={v}
-            onClick={() => setActiveView(v)}
-            className="flex-1 py-2 rounded-xl text-sm font-medium"
-            style={{
-              background: activeView === v ? 'var(--color-accent)' : 'var(--color-surface)',
-              color: activeView === v ? '#fff' : 'var(--color-text-muted)',
-              border: '1px solid var(--color-border)',
-            }}
-          >
-            {v === 'archive' ? `📦 Archive (${archived.length})` : `🗑️ Trash (${recycled.length})`}
-          </button>
-        ))}
+      {/* Segmented control */}
+      <div className="px-4 pb-2 pt-2">
+        <div
+          className="flex gap-1 rounded-2xl p-1"
+          style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)' }}
+          role="tablist"
+        >
+          {(['archive', 'trash'] as const).map((v) => {
+            const active = activeView === v;
+            return (
+              <button
+                type="button"
+                key={v}
+                role="tab"
+                aria-selected={active}
+                onClick={() => setActiveView(v)}
+                className="relative flex-1 rounded-xl py-2.5 text-center text-xs font-semibold uppercase tracking-wide transition-[color,transform,background] duration-200"
+                style={{
+                  background: active ? 'var(--color-surface)' : 'transparent',
+                  color: active ? 'var(--color-text)' : 'var(--color-text-muted)',
+                  boxShadow: active ? '0 1px 0 rgba(255,255,255,0.06) inset' : undefined,
+                }}
+              >
+                {v === 'archive' ? `Archive (${archived.length})` : `Trash (${recycled.length})`}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {loading ? (
@@ -118,43 +130,43 @@ function ArchiveContent() {
           </p>
         </div>
       ) : (
-        <div className="px-4 flex flex-col gap-3 pt-2">
+        <div className="flex flex-col gap-3 px-4 pb-6 pt-2">
           {list.map((w) => (
             <div
               key={w.id}
-              className="rounded-2xl p-4"
+              className="surface-card rounded-2xl p-4"
               style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
             >
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <p className="font-semibold text-sm" style={{ color: 'var(--color-text)' }}>
+              <div className="mb-3 flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold tracking-tight" style={{ color: 'var(--color-text)' }}>
                     {w.title}
                   </p>
-                  <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+                  <p className="mt-1 text-xs leading-relaxed" style={{ color: 'var(--color-text-muted)' }}>
                     {getTabName(w.tabId)} · {formatDate(w.createdAt)}
                   </p>
                 </div>
               </div>
               <div className="flex gap-2">
                 <button
+                  type="button"
                   onClick={() =>
-                    activeView === 'archive'
-                      ? handleRestoreFromArchive(w)
-                      : handleRestoreFromTrash(w)
+                    activeView === 'archive' ? handleRestoreFromArchive(w) : handleRestoreFromTrash(w)
                   }
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium"
+                  className="flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-semibold transition-opacity duration-150 active:opacity-80"
                   style={{ background: 'var(--color-accent-bg)', color: 'var(--color-accent)' }}
                 >
-                  <RotateCcw size={13} />
+                  <RotateCcw size={14} strokeWidth={2} />
                   Restore
                 </button>
                 <button
+                  type="button"
                   onClick={() => setDeleteTarget(w)}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium"
+                  className="flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-semibold transition-opacity duration-150 active:opacity-80"
                   style={{ background: 'var(--color-expense-bg)', color: 'var(--color-expense)' }}
                 >
-                  <Trash2 size={13} />
-                  Delete Forever
+                  <Trash2 size={14} strokeWidth={2} />
+                  Delete forever
                 </button>
               </div>
             </div>

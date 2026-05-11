@@ -22,7 +22,7 @@ import {
 import { auth } from '@/lib/firebase';
 import { ensureSystemData } from '@/lib/bootstrap';
 import { initializeUserData } from '@/lib/firestore';
-import { hydrateFromFirestore, setupSyncListener } from '@/lib/sync';
+import { hydrateFromFirestore, setupSyncListener, clearLocalData } from '@/lib/sync';
 import { useStore } from '@/store/useStore';
 
 interface AuthContextType {
@@ -109,6 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = useCallback(async () => {
     setError(null);
     await firebaseSignOut(auth);
+    await clearLocalData();
     useStore.getState().reset();
   }, []);
 

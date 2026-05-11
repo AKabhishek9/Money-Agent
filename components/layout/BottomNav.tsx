@@ -62,54 +62,47 @@ export default function BottomNav({ onMoreClick }: BottomNavProps) {
   const handleClick = (item: NavItem) => {
     if (item.label === 'More' && onMoreClick) {
       onMoreClick();
-    } else if (pathname !== item.href) {
+    } else {
+      // Even if pathname matches, we might have query params (like ?w=...)
+      // so we should push to clear them if the user clicks the nav item again
       router.push(item.href);
     }
   };
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around safe-bottom"
+      className="fixed bottom-0 left-0 right-0 z-40 flex items-end justify-around safe-bottom backdrop-blur-md supports-[backdrop-filter]:bg-[color-mix(in_oklab,var(--color-nav)_92%,transparent)]"
       style={{
         background: 'var(--color-nav)',
         borderTop: '1px solid var(--color-border)',
-        paddingBottom: 'max(env(safe-area-inset-bottom), 8px)',
-        paddingTop: '8px',
+        paddingBottom: 'max(env(safe-area-inset-bottom), 10px)',
+        paddingTop: '6px',
       }}
     >
       {NAV_ITEMS.map((item) => {
         const active = isActive(item);
         return (
           <button
+            type="button"
             key={item.label}
             onClick={() => handleClick(item)}
-            className="flex flex-col items-center gap-1 px-4 py-1 rounded-xl transition-all duration-150 relative"
+            className="relative flex min-h-[52px] min-w-[56px] flex-col items-center justify-end gap-0.5 rounded-xl px-3 pb-1 pt-1 transition-[color,transform] duration-200"
             style={{
               color: active ? 'var(--color-accent)' : 'var(--color-text-muted)',
-              minWidth: 56,
             }}
           >
             <div
-              className="transition-transform duration-150"
-              style={{ transform: active ? 'scale(1.1)' : 'scale(1)' }}
+              className="flex h-8 items-center justify-center transition-transform duration-200 ease-out"
+              style={{ transform: active ? 'translateY(-1px)' : 'translateY(0)' }}
             >
               {item.icon}
             </div>
-            <span
-              className="text-xs font-medium"
-              style={{ fontSize: 10 }}
-            >
-              {item.label}
-            </span>
+            <span className="text-[0.625rem] font-semibold uppercase tracking-wide">{item.label}</span>
             {active && (
-              <div
-                className="absolute top-0 left-1/2 -translate-x-1/2 rounded-full"
-                style={{
-                  width: 32,
-                  height: 2,
-                  background: 'var(--color-accent)',
-                  borderRadius: '0 0 2px 2px',
-                }}
+              <span
+                className="absolute left-1/2 top-1 h-0.5 w-7 -translate-x-1/2 rounded-full"
+                style={{ background: 'var(--color-accent)', opacity: 0.95 }}
+                aria-hidden
               />
             )}
           </button>

@@ -59,11 +59,11 @@ export default function EntryInput({ onAdd, disabled, persons }: EntryInputProps
   const isExpense = parsed?.isValid && parsed.amount < 0;
 
   return (
-    <div className="p-3 z-20" style={{ background: 'var(--color-nav)' }}>
+    <div className="safe-bottom z-20 px-3 pb-3 pt-2" style={{ background: 'var(--color-nav)' }}>
       {/* Preview */}
       {parsed?.isValid && (
         <div
-          className="flex items-center justify-between px-3 py-1.5 rounded-xl mb-2"
+          className="mb-2 flex items-center justify-between gap-3 rounded-xl px-3 py-2"
           style={{
             background: isIncome
               ? 'var(--color-income-bg)'
@@ -72,7 +72,7 @@ export default function EntryInput({ onAdd, disabled, persons }: EntryInputProps
                 : 'var(--color-surface-2)',
           }}
         >
-          <span className="text-sm font-medium truncate" style={{ color: 'var(--color-text-muted)' }}>
+          <span className="min-w-0 truncate text-sm font-medium leading-snug" style={{ color: 'var(--color-text-muted)' }}>
             {parsed.note ||
               (parsed.type === 'expression'
                 ? 'Expression'
@@ -81,7 +81,7 @@ export default function EntryInput({ onAdd, disabled, persons }: EntryInputProps
                   : 'Expense')}
           </span>
           <span
-            className="font-mono font-semibold text-sm ml-3 shrink-0"
+            className="amount-mono shrink-0 text-sm font-semibold tabular-nums"
             style={{
               color: isIncome
                 ? 'var(--color-income)'
@@ -104,7 +104,7 @@ export default function EntryInput({ onAdd, disabled, persons }: EntryInputProps
         </div>
       )}
 
-      {persons && persons.length > 0 && (
+      {persons && persons.length > 0 ? (
         <div className="flex items-center gap-2 mb-2 flex-wrap">
           {/* Date Picker */}
           <input
@@ -209,19 +209,19 @@ export default function EntryInput({ onAdd, disabled, persons }: EntryInputProps
         </div>
       )}
 
-      {/* Input row */}
-      <div className="flex items-center gap-2 min-w-0">
+      {/* Input row — amount | note split */}
+      <div className="flex min-w-0 items-end gap-2">
         <div
-          className="flex-1 flex items-center gap-2 rounded-xl px-3 min-w-0"
+          className="flex min-h-[52px] min-w-0 flex-1 items-stretch rounded-xl transition-[border-color,box-shadow] duration-200"
           style={{
             background: 'var(--color-surface-2)',
             border: `1px solid ${parsed?.isValid
               ? isIncome
-                ? 'var(--color-income)'
-                : 'var(--color-expense)'
+                ? 'color-mix(in oklab, var(--color-income) 55%, var(--color-border))'
+                : 'color-mix(in oklab, var(--color-expense) 55%, var(--color-border))'
               : 'var(--color-border)'
               }`,
-            transition: 'border-color 0.15s',
+            boxShadow: parsed?.isValid ? '0 0 0 1px color-mix(in oklab, var(--color-accent) 12%, transparent)' : undefined,
           }}
         >
           <input
@@ -232,16 +232,18 @@ export default function EntryInput({ onAdd, disabled, persons }: EntryInputProps
             onKeyDown={handleKey}
             placeholder="Amount"
             disabled={disabled || loading}
-            className="w-[60%] min-w-0 py-3 text-sm outline-none bg-transparent font-mono"
+            className="amount-mono min-w-0 flex-[1.1] px-3 py-3 text-[0.9375rem] outline-none"
             style={{
               color: 'var(--color-text)',
               caretColor: 'var(--color-accent)',
+              background: 'transparent',
             }}
             autoComplete="off"
             autoCorrect="off"
             spellCheck={false}
             inputMode="text"
           />
+          <div className="w-px shrink-0 self-stretch my-2.5" style={{ background: 'var(--color-border)' }} aria-hidden />
           <input
             type="text"
             value={noteInput}
@@ -249,10 +251,11 @@ export default function EntryInput({ onAdd, disabled, persons }: EntryInputProps
             onKeyDown={handleKey}
             placeholder="Note"
             disabled={disabled || loading}
-            className="w-[40%] min-w-0 py-3 text-sm outline-none bg-transparent"
+            className="min-w-0 flex-[0.9] px-2 py-3 pr-1 text-[0.9375rem] outline-none"
             style={{
               color: 'var(--color-text)',
               caretColor: 'var(--color-accent)',
+              background: 'transparent',
             }}
             autoComplete="off"
             autoCorrect="off"
@@ -262,13 +265,15 @@ export default function EntryInput({ onAdd, disabled, persons }: EntryInputProps
           {(amountInput || noteInput) && (
             <button
               type="button"
+              className="flex h-11 w-10 shrink-0 items-center justify-center rounded-lg transition-opacity duration-150 active:opacity-70"
               onClick={() => {
                 setAmountInput('');
                 setNoteInput('');
               }}
+              aria-label="Clear input"
               style={{ color: 'var(--color-text-muted)' }}
             >
-              <X size={16} />
+              <X size={18} strokeWidth={2} />
             </button>
           )}
         </div>
@@ -277,14 +282,15 @@ export default function EntryInput({ onAdd, disabled, persons }: EntryInputProps
           type="button"
           onClick={handleSubmit}
           disabled={!parsed?.isValid || loading}
-          className="p-3 rounded-xl transition-all duration-150 shrink-0"
+          className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-xl transition-[transform,opacity] duration-150 active:scale-[0.96] disabled:opacity-60"
           style={{
             background:
               parsed?.isValid && !loading ? 'var(--color-accent)' : 'var(--color-surface-2)',
             color: parsed?.isValid && !loading ? '#fff' : 'var(--color-text-dim)',
           }}
+          aria-label="Save entry"
         >
-          <Send size={18} />
+          <Send size={20} strokeWidth={2} />
         </button>
       </div>
     </div>

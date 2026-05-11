@@ -131,7 +131,7 @@ function PeopleContent() {
 
   // ── People list ──
   return (
-    <div>
+    <div className="flex flex-col h-full overflow-hidden">
       <Header
         title="People"
         subtitle="Person-based ledgers"
@@ -149,29 +149,27 @@ function PeopleContent() {
       {/* Combined total banner */}
       {persons.length > 0 && (
         <div
-          className="mx-4 mt-4 mb-3 rounded-2xl p-4 flex items-center justify-between"
+          className="surface-card mx-4 mb-3 mt-4 flex items-center justify-between gap-3 rounded-2xl p-4"
           style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
         >
-          <div>
-            <p className="text-xs mb-0.5" style={{ color: 'var(--color-text-muted)' }}>
-              Combined Net Balance
-            </p>
+          <div className="min-w-0">
+            <p className="text-balance-label mb-1">Combined net</p>
             <p
-              className="font-mono font-bold text-xl"
+              className="amount-mono text-xl font-bold leading-none tracking-tight"
               style={{
                 color:
                   combinedBalance > 0
                     ? 'var(--color-income)'
                     : combinedBalance < 0
-                    ? 'var(--color-expense)'
-                    : 'var(--color-text)',
+                      ? 'var(--color-expense)'
+                      : 'var(--color-text)',
               }}
             >
               {formatAmount(combinedBalance)}
             </p>
           </div>
-          <div className="text-right">
-            <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+          <div className="shrink-0 text-right">
+            <p className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>
               {persons.length} {persons.length === 1 ? 'person' : 'people'}
             </p>
           </div>
@@ -181,7 +179,7 @@ function PeopleContent() {
       {loading ? (
         <Loader label="Loading people..." />
       ) : persons.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
+        <div className="flex-1 flex flex-col items-center justify-center py-20 px-6 text-center">
           <div className="text-5xl mb-4">👥</div>
           <p className="font-semibold text-base mb-1" style={{ color: 'var(--color-text)' }}>
             No people yet
@@ -191,7 +189,7 @@ function PeopleContent() {
           </p>
         </div>
       ) : (
-        <div className="pt-2">
+        <div className="flex-1 overflow-y-auto pt-2 pb-24">
           {persons.map((p) => (
             <PersonCard
               key={p.id}

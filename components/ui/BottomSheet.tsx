@@ -30,35 +30,37 @@ export default function BottomSheet({ title, onClose, children, height = 'auto' 
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
-        className={`rounded-t-3xl flex flex-col animate-slide-up ${heights[height]}`}
-        style={{ background: 'var(--color-surface)' }}
+        className={`flex flex-col rounded-t-[1.35rem] animate-slide-up shadow-2xl ${heights[height]}`}
+        style={{
+          background: 'var(--color-surface)',
+          borderTop: '1px solid color-mix(in oklab, var(--color-border) 80%, transparent)',
+        }}
       >
         {/* Handle bar */}
-        <div className="flex justify-center pt-3 pb-1 shrink-0">
-          <div
-            className="rounded-full"
-            style={{ width: 36, height: 4, background: 'var(--color-border-2)' }}
-          />
+        <div className="flex shrink-0 justify-center pb-1 pt-2.5">
+          <div className="rounded-full" style={{ width: 40, height: 5, background: 'var(--color-border-2)' }} />
         </div>
 
         {/* Header */}
         {title && (
           <div
-            className="flex items-center justify-between px-4 py-3 shrink-0"
+            className="flex shrink-0 items-center justify-between px-4 py-2.5"
             style={{ borderBottom: '1px solid var(--color-border)' }}
           >
-            <h2 className="font-semibold text-base" style={{ color: 'var(--color-text)' }}>
+            <h2 className="text-base font-semibold tracking-tight" style={{ color: 'var(--color-text)' }}>
               {title}
             </h2>
             <button
+              type="button"
               onClick={onClose}
-              className="p-2 rounded-xl"
+              className="flex h-10 w-10 items-center justify-center rounded-xl transition-opacity duration-150 active:opacity-80"
               style={{
                 background: 'var(--color-surface-2)',
                 color: 'var(--color-text-muted)',
               }}
+              aria-label="Close"
             >
-              <X size={18} />
+              <X size={18} strokeWidth={2} />
             </button>
           </div>
         )}

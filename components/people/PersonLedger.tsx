@@ -83,102 +83,88 @@ export default function PersonLedger({ person, userId }: PersonLedgerProps) {
 
   return (
     <div className="flex flex-col h-[100dvh] overflow-hidden">
-      {/* Balance header */}
-      <div
-        className="px-4 py-4 shrink-0"
-        style={{ borderBottom: '1px solid var(--color-border)' }}
-      >
-        <div className="flex items-end justify-between mb-3">
-          {/* Avatar + name */}
-          <div className="flex items-center gap-3">
+      {/* Balance header — chat profile strip */}
+      <div className="surface-card shrink-0 px-4 py-3" style={{ borderBottom: '1px solid var(--color-border)' }}>
+        <div className="mb-3 flex items-start justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
             <div
-              className="w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold"
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-lg font-bold tracking-tight"
               style={{
                 background: isZero
                   ? 'var(--color-surface-2)'
                   : isPositive
-                  ? 'var(--color-income-bg)'
-                  : 'var(--color-expense-bg)',
-                color: isZero
-                  ? 'var(--color-text-muted)'
-                  : isPositive
-                  ? 'var(--color-income)'
-                  : 'var(--color-expense)',
+                    ? 'var(--color-income-bg)'
+                    : 'var(--color-expense-bg)',
+                color: isZero ? 'var(--color-text-muted)' : isPositive ? 'var(--color-income)' : 'var(--color-expense)',
               }}
             >
               {person.name.charAt(0).toUpperCase()}
             </div>
-            <div>
-              <p className="font-bold text-base" style={{ color: 'var(--color-text)' }}>
+            <div className="min-w-0">
+              <p className="truncate text-base font-semibold leading-tight tracking-tight" style={{ color: 'var(--color-text)' }}>
                 {person.name}
               </p>
               {person.note && (
-                <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                <p className="mt-0.5 truncate text-xs leading-snug" style={{ color: 'var(--color-text-muted)' }}>
                   {person.note}
                 </p>
               )}
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1.5">
             <button
+              type="button"
               onClick={() => exportPersonToCSV(person.name, entries)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium"
+              className="flex h-10 items-center gap-1.5 rounded-xl px-3 text-xs font-semibold transition-opacity duration-150 active:opacity-80"
               style={{ background: 'var(--color-surface-2)', color: 'var(--color-text-muted)' }}
             >
-              <Download size={13} />
+              <Download size={14} strokeWidth={2} />
               CSV
             </button>
             <button
+              type="button"
               onClick={() => exportPersonToPDF(person.name, entries)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium"
+              className="flex h-10 items-center gap-1.5 rounded-xl px-3 text-xs font-semibold transition-opacity duration-150 active:opacity-80"
               style={{ background: 'var(--color-surface-2)', color: 'var(--color-text-muted)' }}
             >
-              <Download size={13} />
+              <Download size={14} strokeWidth={2} />
               PDF
             </button>
           </div>
         </div>
 
-        {/* Balance */}
         <div
-          className="rounded-2xl p-4 flex items-center justify-between"
+          className="flex items-center justify-between gap-3 rounded-2xl px-4 py-3"
           style={{
             background: isZero
               ? 'var(--color-surface-2)'
               : isPositive
-              ? 'var(--color-income-bg)'
-              : 'var(--color-expense-bg)',
+                ? 'var(--color-income-bg)'
+                : 'var(--color-expense-bg)',
+            border: '1px solid color-mix(in oklab, var(--color-border) 65%, transparent)',
           }}
         >
           <div>
-            <p className="text-xs mb-1" style={{ color: 'var(--color-text-muted)' }}>
-              Net Balance
-            </p>
+            <p className="text-balance-label mb-1">Net balance</p>
             <p
-              className="font-mono font-bold text-2xl"
+              className="amount-mono text-2xl font-bold leading-none tracking-tight"
               style={{
-                color: isZero
-                  ? 'var(--color-text-muted)'
-                  : isPositive
-                  ? 'var(--color-income)'
-                  : 'var(--color-expense)',
+                color: isZero ? 'var(--color-text-muted)' : isPositive ? 'var(--color-income)' : 'var(--color-expense)',
               }}
             >
               {isZero ? '₹0' : formatAmount(balance)}
             </p>
           </div>
-          <div className="text-right">
-            <p className="text-2xl">{isZero ? '✅' : isPositive ? '⬆️' : '⬇️'}</p>
-            <p className="text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>
-              {isZero ? 'Settled up' : isPositive ? `${person.name} owes you` : `You owe ${person.name}`}
+          <div className="max-w-[48%] text-right">
+            <p className="text-xs font-medium leading-snug" style={{ color: 'var(--color-text-muted)' }}>
+              {isZero ? 'All square' : isPositive ? `${person.name} owes you` : `You owe ${person.name}`}
             </p>
           </div>
         </div>
 
-        {/* Helper text */}
-        <p className="text-xs mt-2 text-center" style={{ color: 'var(--color-text-dim)' }}>
-          +amount = {person.name} owes you &nbsp;·&nbsp; -amount = you owe
+        <p className="mt-2 text-center text-[0.6875rem] leading-relaxed" style={{ color: 'var(--color-text-dim)' }}>
+          +amount → {person.name} owes you · −amount → you owe
         </p>
       </div>
 
@@ -216,13 +202,7 @@ export default function PersonLedger({ person, userId }: PersonLedgerProps) {
         )}
       </div>
 
-      <div
-        className="shrink-0 border-t"
-        style={{
-          borderColor: 'var(--color-border)',
-          background: 'var(--color-background, var(--color-bg))',
-        }}
-      >
+      <div className="shrink-0 border-t" style={{ borderColor: 'var(--color-border)', background: 'var(--color-nav)' }}>
         <EntryInput
           onAdd={handleAdd}
           placeholder="+5000 lent money  ·  -2000 received back"

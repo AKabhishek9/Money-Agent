@@ -208,7 +208,7 @@ function PersonalContent() {
 
   // ── Windows list ──
   return (
-    <div>
+    <div className="flex flex-col h-full overflow-hidden">
       <Header
         title="Personal"
         subtitle="Your accounting notebook"
@@ -235,7 +235,7 @@ function PersonalContent() {
       {loading ? (
         <Loader label="Loading pages..." />
       ) : windows.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
+        <div className="flex-1 flex flex-col items-center justify-center py-20 px-6 text-center">
           <div className="text-5xl mb-4">📓</div>
           <p className="font-semibold text-base mb-1" style={{ color: 'var(--color-text)' }}>
             No pages yet
@@ -245,7 +245,7 @@ function PersonalContent() {
           </p>
         </div>
       ) : (
-        <div className="pt-4">
+        <div className="flex-1 overflow-y-auto pt-4 pb-24">
           {windows.map((w) => (
             <WindowCard
               key={w.id}

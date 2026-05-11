@@ -1,17 +1,17 @@
 @import "tailwindcss";
 
 @theme {
-  /* Money Ledger Dark Theme */
-  --color-bg: #0b0b12;
-  --color-surface: #111118;
-  --color-surface-2: #18181f;
-  --color-surface-3: #1e1e28;
-  --color-border: #252535;
-  --color-border-2: #2f2f42;
+  /* Money Ledger — dark-first notebook (depth, not pure black) */
+  --color-bg: #0c0c14;
+  --color-surface: #12121a;
+  --color-surface-2: #181822;
+  --color-surface-3: #1f1f2a;
+  --color-border: #262636;
+  --color-border-2: #303044;
 
-  --color-text: #e4e4f0;
-  --color-text-muted: #6b6b88;
-  --color-text-dim: #3a3a55;
+  --color-text: #e8e8f2;
+  --color-text-muted: #6f6f8e;
+  --color-text-dim: #3d3d58;
 
   --color-income: #22d3a0;
   --color-income-bg: #0a2e23;
@@ -25,10 +25,18 @@
   --color-gold: #fbbf24;
   --color-gold-bg: #2a1f05;
 
-  --color-nav: #0e0e16;
+  --color-nav: #0f0f18;
+
+  /* Elevation + motion tokens (UI only) */
+  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-card-sm: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 2px 12px rgba(0, 0, 0, 0.28);
+  --radius-card: 1rem;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 160ms;
+  --duration-panel: 200ms;
 
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 
 * {
@@ -48,6 +56,12 @@ body {
   overscroll-behavior: none;
   min-height: 100dvh;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+[role='button'] {
+  touch-action: manipulation;
 }
 
 /* Smooth scrolling */
@@ -94,37 +108,55 @@ body {
   box-shadow: 0 0 0 2px var(--color-accent);
 }
 
-/* Bottom sheet animation */
+/* Bottom sheet + overlays — fast, notebook-snappy */
 @keyframes slideUp {
-  from { transform: translateY(100%); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(12px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes scaleIn {
-  from { transform: scale(0.95); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0.98);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .animate-slide-up {
-  animation: slideUp 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+  animation: slideUp var(--duration-panel) var(--ease-out);
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.15s ease-out;
+  animation: fadeIn var(--duration-fast) ease-out;
 }
 
 .animate-scale-in {
-  animation: scaleIn 0.15s ease-out;
+  animation: scaleIn var(--duration-fast) var(--ease-out);
 }
 
-/* Entry item swipe hint */
+/* Entry row — subtle press feedback */
 .entry-item {
-  transition: transform 0.15s ease, background 0.1s ease;
+  transition:
+    transform var(--duration-fast) var(--ease-out),
+    background var(--duration-fast) ease;
 }
 
 /* Pulse loader */
@@ -137,17 +169,42 @@ body {
   animation: pulse-glow 1.5s ease-in-out infinite;
 }
 
-/* Tab button active indicator */
+/* Tab / segmented active pill helper */
 .tab-active::after {
   content: '';
   position: absolute;
-  bottom: 0;
+  bottom: 2px;
   left: 50%;
   transform: translateX(-50%);
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
+  width: 18px;
+  height: 3px;
+  border-radius: 9999px;
   background: var(--color-accent);
+  opacity: 0.9;
+}
+
+/* Card elevation — use with inline bg/border */
+.surface-card {
+  box-shadow: var(--shadow-card-sm);
+}
+
+.surface-card-raised {
+  box-shadow: var(--shadow-card);
+}
+
+/* Typography helpers */
+.text-balance-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.amount-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 }
 
 /* Number input - hide spinner */

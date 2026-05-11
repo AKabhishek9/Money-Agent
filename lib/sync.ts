@@ -104,14 +104,7 @@ export async function hydrateFromFirestore(userId: string): Promise<void> {
   if (typeof window === 'undefined') return;
 
   const db = getDb();
-  const existingTabs = await db.tabs.where('userId').equals(userId).count();
-
-  const existingWindows = await db.windows.where('userId').equals(userId).count();
-
-  if (existingTabs > 0 && existingWindows > 0) {
-    return;
-  }
-
+  // Pull everything from Firestore and merge with local data using bulkPut (upsert)
   const collections: SyncCollection[] = [
     'tabs',
     'windows',
@@ -122,15 +115,19 @@ export async function hydrateFromFirestore(userId: string): Promise<void> {
   ];
 
   for (const collectionName of collections) {
-    const q = query(collection(firestoreDb, collectionName), where('userId', '==', userId));
-    const snapshot = await getDocs(q);
-    if (snapshot.empty) continue;
+    try {
+      const q = query(collection(firestoreDb, collectionName), where('userId', '==', userId));
+      const snapshot = await getDocs(q);
+      if (snapshot.empty) continue;
 
-    const records = snapshot.docs.map((snapshotDoc) =>
-      fromFirestore(snapshotDoc.data(), snapshotDoc.id)
-    );
-    const table = db.table(collectionName) as Table<Record<string, unknown>, string>;
-    await table.bulkPut(records);
+      const records = snapshot.docs.map((snapshotDoc) =>
+        fromFirestore(snapshotDoc.data(), snapshotDoc.id)
+      );
+      const table = db.table(collectionName) as Table<Record<string, unknown>, string>;
+      await table.bulkPut(records);
+    } catch (err) {
+      console.error(`Failed to hydrate ${collectionName}:`, err);
+    }
   }
 }
 
@@ -148,4 +145,17 @@ export function setupSyncListener(): () => void {
   }
 
   return () => window.removeEventListener('online', handleOnline);
+}
+
+export async function clearLocalData(): Promise<void> {
+  const db = getDb();
+  await Promise.all([
+    db.tabs.clear(),
+    db.windows.clear(),
+    db.entries.clear(),
+    db.persons.clear(),
+    db.personEntries.clear(),
+    db.vault.clear(),
+    db.syncQueue.clear(),
+  ]);
 }

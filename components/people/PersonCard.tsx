@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { MoreVertical, Trash2, Pencil, User } from 'lucide-react';
+import { MoreVertical, Trash2, Pencil } from 'lucide-react';
 import type { Person } from '@/lib/types';
 import { formatAmount } from '@/lib/parser';
 
@@ -28,14 +28,15 @@ export default function PersonCard({
 
   return (
     <div
-      className={`relative mx-4 mb-3 rounded-2xl ${showMenu ? 'z-20' : ''}`}
+      className={`surface-card relative mx-4 mb-3 overflow-hidden rounded-2xl transition-shadow duration-200 ${showMenu ? 'z-20' : ''}`}
       style={{
         background: 'var(--color-surface)',
         border: '1px solid var(--color-border)',
       }}
     >
       <button
-        className="w-full flex items-center gap-4 p-4 text-left active:opacity-80"
+        type="button"
+        className="flex w-full items-center gap-3 p-4 text-left transition-[transform,opacity] duration-150 active:scale-[0.995] active:opacity-90"
         onClick={onClick}
       >
         {/* Avatar */}
@@ -69,21 +70,21 @@ export default function PersonCard({
         </div>
 
         {/* Balance */}
-        <div className="text-right shrink-0 mr-8">
+        <div className="mr-10 shrink-0 text-right">
           {isZero ? (
-            <span className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+            <span className="text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>
               Settled
             </span>
           ) : (
             <>
               <p
-                className="font-mono font-bold text-base"
+                className="amount-mono text-lg font-bold leading-none tracking-tight"
                 style={{ color: isPositive ? 'var(--color-income)' : 'var(--color-expense)' }}
               >
                 {formatAmount(balance)}
               </p>
-              <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
-                {isPositive ? 'owes you' : 'you owe'}
+              <p className="mt-1 text-[0.625rem] font-medium uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>
+                {isPositive ? 'Owes you' : 'You owe'}
               </p>
             </>
           )}
@@ -92,17 +93,23 @@ export default function PersonCard({
 
       {/* Menu button */}
       <button
-        className="absolute top-3 right-3 p-1.5 rounded-lg"
+        type="button"
+        className="absolute right-2 top-2 flex h-10 w-10 items-center justify-center rounded-xl transition-colors duration-150"
         style={{ color: 'var(--color-text-muted)' }}
-        onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
+        aria-expanded={showMenu}
+        aria-label="Person actions"
+        onClick={(e) => {
+          e.stopPropagation();
+          setShowMenu(!showMenu);
+        }}
       >
-        <MoreVertical size={16} />
+        <MoreVertical size={18} strokeWidth={2} />
       </button>
 
       {showMenu && (
         <>
           <div
-            className="absolute top-10 right-3 rounded-xl overflow-hidden z-10 animate-scale-in"
+            className="animate-scale-in absolute right-2 top-12 z-20 overflow-hidden rounded-xl shadow-lg"
             style={{
               background: 'var(--color-surface-2)',
               border: '1px solid var(--color-border)',
@@ -110,23 +117,31 @@ export default function PersonCard({
             }}
           >
             <button
-              className="flex items-center gap-2 w-full px-3 py-2.5 text-sm"
+              type="button"
+              className="flex w-full items-center gap-2 px-3 py-3 text-left text-sm font-medium transition-colors duration-150 active:bg-[var(--color-surface-3)]"
               style={{ color: 'var(--color-text)' }}
-              onClick={() => { setShowMenu(false); onEdit(); }}
+              onClick={() => {
+                setShowMenu(false);
+                onEdit();
+              }}
             >
-              <Pencil size={14} />
+              <Pencil size={14} strokeWidth={2} />
               Edit
             </button>
             <button
-              className="flex items-center gap-2 w-full px-3 py-2.5 text-sm"
+              type="button"
+              className="flex w-full items-center gap-2 px-3 py-3 text-left text-sm font-medium transition-colors duration-150 active:bg-[var(--color-surface-3)]"
               style={{ color: 'var(--color-expense)' }}
-              onClick={() => { setShowMenu(false); onDelete(); }}
+              onClick={() => {
+                setShowMenu(false);
+                onDelete();
+              }}
             >
-              <Trash2 size={14} />
+              <Trash2 size={14} strokeWidth={2} />
               Delete
             </button>
           </div>
-          <div className="fixed inset-0 z-9" onClick={() => setShowMenu(false)} />
+          <div className="fixed inset-0 z-10" aria-hidden onClick={() => setShowMenu(false)} />
         </>
       )}
     </div>

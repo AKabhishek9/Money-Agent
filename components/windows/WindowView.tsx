@@ -118,45 +118,42 @@ export default function WindowView({ window: w, userId, onBack, persons }: Windo
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      {/* Totals bar */}
-      <div
-        className="px-4 py-4 shrink-0"
-        style={{ borderBottom: '1px solid var(--color-border)' }}
-      >
-        <div className="flex items-end justify-between">
-          <div>
-            <p className="text-xs mb-1" style={{ color: 'var(--color-text-muted)' }}>
-              Total Balance
-            </p>
+      {/* Totals bar — compact summary, thumb-friendly export */}
+      <div className="surface-card shrink-0 px-4 py-3" style={{ borderBottom: '1px solid var(--color-border)' }}>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-balance-label mb-1">Total balance</p>
             <p
-              className="font-mono font-bold text-3xl"
+              className="amount-mono truncate text-[1.75rem] font-bold leading-none tracking-tight sm:text-[2rem]"
               style={{ color: isPositive ? 'var(--color-income)' : 'var(--color-expense)' }}
             >
               {formatAmount(total)}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1.5">
             <button
+              type="button"
               onClick={() => exportWindowToCSV(w.title, entries)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium"
+              className="flex h-10 items-center gap-1.5 rounded-xl px-3 text-xs font-semibold transition-opacity duration-150 active:opacity-80"
               style={{ background: 'var(--color-surface-2)', color: 'var(--color-text-muted)' }}
             >
-              <Download size={13} />
+              <Download size={14} strokeWidth={2} />
               CSV
             </button>
             <button
+              type="button"
               onClick={() => exportWindowToPDF(w.title, entries)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium"
+              className="flex h-10 items-center gap-1.5 rounded-xl px-3 text-xs font-semibold transition-opacity duration-150 active:opacity-80"
               style={{ background: 'var(--color-surface-2)', color: 'var(--color-text-muted)' }}
             >
-              <Download size={13} />
+              <Download size={14} strokeWidth={2} />
               PDF
             </button>
           </div>
         </div>
 
         {/* Stats row */}
-        <div className="flex gap-4 mt-3">
+        <div className="mt-3 flex gap-6">
           <Stat
             label="Income"
             value={calcTotal(entries.filter((e) => e.amount > 0).map((e) => e.amount))}
@@ -194,14 +191,14 @@ export default function WindowView({ window: w, userId, onBack, persons }: Windo
             <div key={dateLabel}>
               {/* Date header */}
               <div
-                className="px-4 py-2 flex items-center gap-2"
-                style={{ background: 'var(--color-surface-2)' }}
+                className="flex items-center gap-2 px-4 py-2"
+                style={{ background: 'color-mix(in oklab, var(--color-surface-2) 92%, transparent)' }}
               >
-                <span className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>
+                <span className="text-[0.6875rem] font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
                   {dateLabel}
                 </span>
-                <div className="flex-1 h-px" style={{ background: 'var(--color-border)' }} />
-                <span className="text-xs font-mono" style={{ color: 'var(--color-text-dim)' }}>
+                <div className="h-px flex-1" style={{ background: 'var(--color-border)' }} />
+                <span className="amount-mono text-[0.6875rem] font-semibold" style={{ color: 'var(--color-text-dim)' }}>
                   {formatAmount(calcTotal(dayEntries.map((e) => e.amount)))}
                 </span>
               </div>
@@ -222,13 +219,7 @@ export default function WindowView({ window: w, userId, onBack, persons }: Windo
       </div>
 
       {/* Entry input */}
-      <div
-        className="shrink-0 border-t"
-        style={{
-          borderColor: 'var(--color-border)',
-          background: 'var(--color-background, var(--color-bg))',
-        }}
-      >
+      <div className="shrink-0 border-t" style={{ borderColor: 'var(--color-border)', background: 'var(--color-nav)' }}>
         <EntryInput onAdd={handleAdd} persons={persons} />
       </div>
 
@@ -257,13 +248,10 @@ function Stat({
 }) {
   return (
     <div>
-      <p className="text-xs mb-0.5" style={{ color: 'var(--color-text-dim)' }}>
+      <p className="mb-0.5 text-[0.625rem] font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-dim)' }}>
         {label}
       </p>
-      <p
-        className="font-mono font-semibold text-sm"
-        style={{ color: color || 'var(--color-text)' }}
-      >
+      <p className="amount-mono text-sm font-semibold tabular-nums" style={{ color: color || 'var(--color-text)' }}>
         {isCount ? value : formatAmount(value)}
       </p>
     </div>

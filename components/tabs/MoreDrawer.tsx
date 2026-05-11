@@ -59,13 +59,14 @@ export default function MoreDrawer({ onClose }: MoreDrawerProps) {
             </p>
             {customTabs.map((tab) => (
               <button
+                type="button"
                 key={tab.id}
                 onClick={() => handleNavigate(`/tab?t=${tab.id}`)}
-                className="flex items-center gap-3 px-4 py-3 rounded-2xl text-left active:opacity-80"
-                style={{ background: 'var(--color-surface-2)' }}
+                className="surface-card flex items-center gap-3 rounded-2xl px-4 py-3.5 text-left transition-[transform,opacity] duration-150 active:scale-[0.99] active:opacity-90"
+                style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)' }}
               >
-                <span className="text-xl">{tab.icon}</span>
-                <span className="font-medium text-sm" style={{ color: 'var(--color-text)' }}>
+                <span className="text-xl leading-none">{tab.icon}</span>
+                <span className="truncate text-sm font-semibold tracking-tight" style={{ color: 'var(--color-text)' }}>
                   {tab.name}
                 </span>
               </button>
@@ -138,16 +139,17 @@ export default function MoreDrawer({ onClose }: MoreDrawerProps) {
           </div>
         ) : (
           <button
+            type="button"
             onClick={() => setShowAddTab(true)}
-            className="flex items-center gap-3 px-4 py-3 rounded-2xl text-left"
+            className="flex items-center gap-3 rounded-2xl px-4 py-3.5 text-left transition-opacity duration-150 active:opacity-90"
             style={{
               background: 'var(--color-surface-2)',
               border: '1px dashed var(--color-border-2)',
               color: 'var(--color-accent)',
             }}
           >
-            <Plus size={18} />
-            <span className="text-sm font-medium">New Custom Tab</span>
+            <Plus size={18} strokeWidth={2} />
+            <span className="text-sm font-semibold">New custom tab</span>
           </button>
         )}
 
@@ -160,24 +162,29 @@ export default function MoreDrawer({ onClose }: MoreDrawerProps) {
           { icon: <Settings size={18} />, label: 'Settings', href: '/settings' },
         ].map((item) => (
           <button
+            type="button"
             key={item.label}
             onClick={() => handleNavigate(item.href)}
-            className="flex items-center gap-3 px-4 py-3 rounded-2xl text-left"
+            className="flex min-h-12 items-center gap-3 rounded-2xl px-4 py-3 text-left transition-colors duration-150 active:bg-[var(--color-surface-2)]"
             style={{ color: 'var(--color-text-muted)' }}
           >
             {item.icon}
-            <span className="text-sm font-medium">{item.label}</span>
+            <span className="text-sm font-semibold">{item.label}</span>
           </button>
         ))}
 
         {/* Sign out */}
         <button
-          onClick={() => { signOut(); onClose(); }}
-          className="flex items-center gap-3 px-4 py-3 rounded-2xl text-left"
+          type="button"
+          onClick={() => {
+            signOut();
+            onClose();
+          }}
+          className="flex min-h-12 items-center gap-3 rounded-2xl px-4 py-3 text-left transition-colors duration-150 active:bg-[var(--color-surface-2)]"
           style={{ color: 'var(--color-expense)' }}
         >
-          <LogOut size={18} />
-          <span className="text-sm font-medium">Sign Out</span>
+          <LogOut size={18} strokeWidth={2} />
+          <span className="text-sm font-semibold">Sign out</span>
         </button>
 
         {user && (

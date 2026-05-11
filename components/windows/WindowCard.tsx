@@ -28,73 +28,80 @@ export default function WindowCard({
 
   return (
     <div
-      className={`relative mx-4 mb-3 rounded-2xl ${showMenu ? 'z-20' : ''}`}
+      className={`surface-card relative mx-4 mb-3 overflow-hidden rounded-2xl transition-shadow duration-200 ${showMenu ? 'z-20' : ''}`}
       style={{
         background: 'var(--color-surface)',
-        border: `1px solid ${w.pinned ? 'var(--color-accent)' : 'var(--color-border)'}`,
+        border: `1px solid ${w.pinned ? 'color-mix(in oklab, var(--color-accent) 45%, var(--color-border))' : 'var(--color-border)'}`,
       }}
     >
       <button
-        className="w-full flex items-center gap-4 p-4 text-left active:opacity-80"
+        type="button"
+        className="flex w-full items-center gap-3 p-4 text-left transition-[transform,opacity] duration-150 active:scale-[0.995] active:opacity-90"
         onClick={onClick}
       >
         {/* Icon */}
         <div
-          className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
           style={{ background: 'var(--color-surface-2)' }}
         >
           {w.autoMonthly ? (
-            <span className="text-lg">📅</span>
+            <span className="text-lg leading-none" aria-hidden>
+              📅
+            </span>
           ) : (
-            <BookOpen size={18} style={{ color: 'var(--color-accent)' }} />
+            <BookOpen size={18} strokeWidth={2} style={{ color: 'var(--color-accent)' }} />
           )}
         </div>
 
         {/* Info */}
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <span
-              className="font-semibold text-sm truncate"
-              style={{ color: 'var(--color-text)' }}
-            >
+            <span className="truncate text-sm font-semibold tracking-tight" style={{ color: 'var(--color-text)' }}>
               {w.title}
             </span>
-            {w.pinned && (
-              <Pin size={11} style={{ color: 'var(--color-accent)', flexShrink: 0 }} />
-            )}
+            {w.pinned && <Pin size={12} strokeWidth={2} style={{ color: 'var(--color-accent)', flexShrink: 0 }} />}
           </div>
-          <span className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+          <span className="mt-1 block text-[0.6875rem] leading-none" style={{ color: 'var(--color-text-muted)' }}>
             {entryCount} {entryCount === 1 ? 'entry' : 'entries'}
           </span>
         </div>
 
         {/* Total */}
-        <div className="text-right shrink-0 pr-8">
+        <div className="shrink-0 pr-10 text-right">
           <div
-            className="font-mono font-bold text-base"
+            className="amount-mono text-lg font-bold leading-none"
             style={{ color: isPositive ? 'var(--color-income)' : 'var(--color-expense)' }}
           >
             {isPositive ? '+' : ''}₹{Math.abs(total).toLocaleString('en-IN')}
           </div>
+          <span className="mt-1 block text-[0.625rem] font-medium uppercase tracking-wider" style={{ color: 'var(--color-text-dim)' }}>
+            Total
+          </span>
         </div>
       </button>
 
       {/* Menu button */}
       <button
-        className="absolute top-3 right-3 p-1.5 rounded-lg"
+        type="button"
+        className="absolute right-2 top-2 flex h-10 w-10 items-center justify-center rounded-xl transition-colors duration-150"
         style={{
           background: showMenu ? 'var(--color-surface-2)' : 'transparent',
           color: 'var(--color-text-muted)',
         }}
-        onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
+        aria-expanded={showMenu}
+        aria-label="Page actions"
+        onClick={(e) => {
+          e.stopPropagation();
+          setShowMenu(!showMenu);
+        }}
       >
-        <MoreVertical size={16} />
+        <MoreVertical size={18} strokeWidth={2} />
       </button>
 
       {/* Dropdown menu */}
       {showMenu && (
         <div
-          className="absolute top-10 right-3 rounded-xl overflow-hidden z-10 animate-scale-in"
+          className="animate-scale-in absolute right-2 top-12 z-20 overflow-hidden rounded-xl shadow-lg"
           style={{
             background: 'var(--color-surface-2)',
             border: '1px solid var(--color-border)',
@@ -128,7 +135,7 @@ export default function WindowCard({
       )}
 
       {showMenu && (
-        <div className="fixed inset-0 z-9" onClick={() => setShowMenu(false)} />
+        <div className="fixed inset-0 z-10" aria-hidden onClick={() => setShowMenu(false)} />
       )}
     </div>
   );
@@ -147,7 +154,8 @@ function MenuBtn({
 }) {
   return (
     <button
-      className="flex items-center gap-2 w-full px-3 py-2.5 text-sm"
+      type="button"
+      className="flex w-full items-center gap-2 px-3 py-3 text-left text-sm font-medium transition-colors duration-150 active:bg-[var(--color-surface-3)]"
       style={{ color: danger ? 'var(--color-expense)' : 'var(--color-text)' }}
       onClick={onClick}
     >
