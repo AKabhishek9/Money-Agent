@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { BookOpen, Users, Shield, Search, MoreHorizontal } from 'lucide-react';
 
@@ -51,13 +52,17 @@ export default function BottomNav({ onMoreClick }: BottomNavProps) {
   const pathname = usePathname();
   const router = useRouter();
 
+  useEffect(() => {
+    NAV_ITEMS.filter((item) => item.label !== 'More').forEach((item) => router.prefetch(item.href));
+  }, [router]);
+
   const isActive = (item: NavItem) =>
     item.match.some((m) => pathname === m || pathname.startsWith(m + '?'));
 
   const handleClick = (item: NavItem) => {
     if (item.label === 'More' && onMoreClick) {
       onMoreClick();
-    } else {
+    } else if (pathname !== item.href) {
       router.push(item.href);
     }
   };

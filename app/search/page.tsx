@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import AuthGuard from '@/components/auth/AuthGuard';
 import AppLayout from '@/components/layout/AppLayout';
 import Header from '@/components/layout/Header';
+import Loader from '@/components/ui/Loader';
 import { useAuth } from '@/contexts/AuthContext';
 import { getDb } from '@/lib/db';
 import { formatAmount } from '@/lib/parser';
@@ -111,11 +112,7 @@ function SearchContent() {
 
       {/* Results */}
       {loading ? (
-        <div className="flex items-center justify-center py-16">
-          <p className="text-sm loading-pulse" style={{ color: 'var(--color-text-muted)' }}>
-            Searching…
-          </p>
-        </div>
+        <Loader label="Searching..." />
       ) : searched && results.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center px-6">
           <div className="text-4xl mb-3">🔍</div>

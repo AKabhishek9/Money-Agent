@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Plus } from 'lucide-react';
 import AuthGuard from '@/components/auth/AuthGuard';
@@ -10,6 +10,7 @@ import WindowCard from '@/components/windows/WindowCard';
 import WindowView from '@/components/windows/WindowView';
 import BottomSheet from '@/components/ui/BottomSheet';
 import Confirm from '@/components/ui/Confirm';
+import Loader from '@/components/ui/Loader';
 import { useAuth } from '@/contexts/AuthContext';
 import { ensureSystemData } from '@/lib/bootstrap';
 import { getDb } from '@/lib/db';
@@ -35,26 +36,56 @@ function PersonalContent() {
     addWindow,
     loadWindows,
     persons,
+    tabs,
+    windowsByTabId,
     softDeleteWindow,
     updateWindow: updateWindowStore,
   } = useStore();
   const searchParams = useSearchParams();
   const router = useRouter();
   const windowId = searchParams.get('w');
+  const cachedPersonalTab = useMemo(
+    () => tabs.find((tab) => tab.type === 'personal') || null,
+    [tabs]
+  );
+  const cachedPersonalWindows = useMemo(
+    () => (cachedPersonalTab ? windowsByTabId[cachedPersonalTab.id] || [] : []),
+    [cachedPersonalTab, windowsByTabId]
+  );
 
-  const [personalTab, setPersonalTab] = useState<Tab | null>(null);
-  const [windows, setWindows] = useState<MoneyWindow[]>([]);
+  const [personalTab, setPersonalTab] = useState<Tab | null>(cachedPersonalTab);
+  const [windows, setWindows] = useState<MoneyWindow[]>(cachedPersonalWindows);
   const [windowStats, setWindowStats] = useState<Record<string, { total: number; count: number }>>({});
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!cachedPersonalTab);
   const [showAddSheet, setShowAddSheet] = useState(false);
   const [newWindowTitle, setNewWindowTitle] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<MoneyWindow | null>(null);
 
   const selectedWindow = windows.find((w) => w.id === windowId) || null;
 
+  useEffect(() => {
+    if (!cachedPersonalTab) return;
+    setPersonalTab(cachedPersonalTab);
+    if (windowsByTabId[cachedPersonalTab.id]) {
+      setWindows(cachedPersonalWindows);
+      setLoading(false);
+    }
+  }, [cachedPersonalTab, cachedPersonalWindows, windowsByTabId]);
+
   const load = useCallback(async () => {
     if (!user) return;
-    setLoading(true);
+    const storeState = useStore.getState();
+    const cachedTab = storeState.tabs.find((tab) => tab.type === 'personal') || null;
+    const cachedWindows = cachedTab ? storeState.windowsByTabId[cachedTab.id] : undefined;
+
+    if (cachedTab && cachedWindows) {
+      setPersonalTab(cachedTab);
+      setWindows(cachedWindows);
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
+
     try {
       const db = getDb();
       const tabs = await db.tabs.where('userId').equals(user.uid).toArray();
@@ -97,6 +128,7 @@ function PersonalContent() {
 
       const wins = await loadWindows(user.uid, pTab.id);
       setWindows(wins);
+      setLoading(false);
 
       const stats: Record<string, { total: number; count: number }> = {};
       await Promise.all(
@@ -201,11 +233,7 @@ function PersonalContent() {
       />
 
       {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <p className="text-sm loading-pulse" style={{ color: 'var(--color-text-muted)' }}>
-            Loading…
-          </p>
-        </div>
+        <Loader label="Loading pages..." />
       ) : windows.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
           <div className="text-5xl mb-4">📓</div>

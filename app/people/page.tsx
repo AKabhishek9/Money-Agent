@@ -10,6 +10,7 @@ import PersonCard from '@/components/people/PersonCard';
 import PersonLedger from '@/components/people/PersonLedger';
 import BottomSheet from '@/components/ui/BottomSheet';
 import Confirm from '@/components/ui/Confirm';
+import Loader from '@/components/ui/Loader';
 import { useAuth } from '@/contexts/AuthContext';
 import { localGetPersonEntries } from '@/lib/entries';
 import { formatAmount, calcTotal } from '@/lib/parser';
@@ -32,15 +33,16 @@ function PeopleContent() {
     addPerson: addPersonStore,
     deletePerson: deletePersonStore,
     loadPersons,
+    persons: cachedPersons,
     updatePerson: updatePersonStore,
   } = useStore();
   const searchParams = useSearchParams();
   const router = useRouter();
   const personId = searchParams.get('p');
 
-  const [persons, setPersons] = useState<Person[]>([]);
+  const [persons, setPersons] = useState<Person[]>(cachedPersons);
   const [balances, setBalances] = useState<Record<string, { balance: number; count: number }>>({});
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(cachedPersons.length === 0);
   const [showAddSheet, setShowAddSheet] = useState(false);
   const [showEditSheet, setShowEditSheet] = useState<Person | null>(null);
   const [newName, setNewName] = useState('');
@@ -49,9 +51,22 @@ function PeopleContent() {
 
   const selectedPerson = persons.find((p) => p.id === personId) || null;
 
+  useEffect(() => {
+    if (cachedPersons.length === 0) return;
+    setPersons(cachedPersons);
+    setLoading(false);
+  }, [cachedPersons]);
+
   const load = useCallback(async () => {
     if (!user) return;
-    setLoading(true);
+    const storePersons = useStore.getState().persons;
+    if (storePersons.length > 0) {
+      setPersons(storePersons);
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
+
     try {
       const pList = await loadPersons(user.uid);
       setPersons(pList);
@@ -100,7 +115,7 @@ function PeopleContent() {
   // ── Person ledger view ──
   if (selectedPerson) {
     return (
-      <div className="flex flex-col h-screen">
+      <div className="flex flex-col h-[100dvh] overflow-hidden">
         <Header
           title={selectedPerson.name}
           subtitle="Personal Ledger"
@@ -164,11 +179,7 @@ function PeopleContent() {
       )}
 
       {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <p className="text-sm loading-pulse" style={{ color: 'var(--color-text-muted)' }}>
-            Loading…
-          </p>
-        </div>
+        <Loader label="Loading people..." />
       ) : persons.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
           <div className="text-5xl mb-4">👥</div>

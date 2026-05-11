@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import Loader from '@/components/ui/Loader';
 
 export default function Root() {
   const { user, loading } = useAuth();
@@ -17,14 +18,5 @@ export default function Root() {
     }
   }, [user, loading, router]);
 
-  return (
-    <div className="flex items-center justify-center min-h-screen" style={{ background: 'var(--color-bg)' }}>
-      <div className="flex flex-col items-center gap-3">
-        <div className="text-3xl">💰</div>
-        <div className="text-sm loading-pulse" style={{ color: 'var(--color-text-muted)' }}>
-          Loading Money Ledger…
-        </div>
-      </div>
-    </div>
-  );
+  return <Loader fullScreen label="Loading Money Ledger..." />;
 }

@@ -5,9 +5,30 @@ import { getDb } from '@/lib/db';
 import { queueSync } from '@/lib/sync';
 import type { MoneyWindow, Person, Tab } from '@/lib/types';
 
+function isVisibleWindow(window: MoneyWindow): boolean {
+  return !window.archived && !window.inRecycleBin;
+}
+
+function sortWindows(windows: MoneyWindow[]): MoneyWindow[] {
+  return [...windows].sort((a, b) => {
+    if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+    if (a.monthKey && b.monthKey) return b.monthKey.localeCompare(a.monthKey);
+    return (a.order || 0) - (b.order || 0);
+  });
+}
+
+function groupWindowsByTab(windows: MoneyWindow[]): Record<string, MoneyWindow[]> {
+  return windows.reduce<Record<string, MoneyWindow[]>>((acc, window) => {
+    if (!acc[window.tabId]) acc[window.tabId] = [];
+    acc[window.tabId].push(window);
+    return acc;
+  }, {});
+}
+
 interface StoreState {
   tabs: Tab[];
   windows: MoneyWindow[];
+  windowsByTabId: Record<string, MoneyWindow[]>;
   persons: Person[];
   isLoaded: boolean;
   userId: string | null;
@@ -41,21 +62,42 @@ interface StoreState {
 export const useStore = create<StoreState>((set, get) => ({
   tabs: [],
   windows: [],
+  windowsByTabId: {},
   persons: [],
   isLoaded: false,
   userId: null,
 
   init: async (userId) => {
     const db = getDb();
-    const [tabs, persons] = await Promise.all([
+    const [tabs, persons, windows] = await Promise.all([
       db.tabs.where('userId').equals(userId).sortBy('order'),
       db.persons.where('userId').equals(userId).sortBy('order'),
+      db.windows
+        .where('userId')
+        .equals(userId)
+        .filter(isVisibleWindow)
+        .toArray(),
     ]);
 
-    set({ tabs, persons, isLoaded: true, userId });
+    const sortedWindowsByTabId = Object.fromEntries(
+      Object.entries(groupWindowsByTab(windows)).map(([tabId, tabWindows]) => [
+        tabId,
+        sortWindows(tabWindows),
+      ])
+    );
+
+    set({
+      tabs,
+      persons,
+      windows: [],
+      windowsByTabId: sortedWindowsByTabId,
+      isLoaded: true,
+      userId,
+    });
   },
 
-  reset: () => set({ tabs: [], windows: [], persons: [], isLoaded: false, userId: null }),
+  reset: () =>
+    set({ tabs: [], windows: [], windowsByTabId: {}, persons: [], isLoaded: false, userId: null }),
 
   loadTabs: async (userId) => {
     const db = getDb();
@@ -114,10 +156,14 @@ export const useStore = create<StoreState>((set, get) => ({
     await db.windows.where('tabId').equals(id).delete();
     await db.tabs.delete(id);
     await queueSync('tabs', 'delete', id);
-    set((state) => ({
-      tabs: state.tabs.filter((tab) => tab.id !== id),
-      windows: state.windows.filter((window) => window.tabId !== id),
-    }));
+    set((state) => {
+      const { [id]: _removed, ...windowsByTabId } = state.windowsByTabId;
+      return {
+        tabs: state.tabs.filter((tab) => tab.id !== id),
+        windows: state.windows.filter((window) => window.tabId !== id),
+        windowsByTabId,
+      };
+    });
   },
 
   loadWindows: async (userId, tabId) => {
@@ -125,16 +171,15 @@ export const useStore = create<StoreState>((set, get) => ({
     const windows = await db.windows
       .where('[userId+tabId]')
       .equals([userId, tabId])
-      .filter((window) => !window.archived && !window.inRecycleBin)
+      .filter(isVisibleWindow)
       .sortBy('order');
 
-    const sorted = windows.sort((a, b) => {
-      if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
-      if (a.monthKey && b.monthKey) return b.monthKey.localeCompare(a.monthKey);
-      return a.order - b.order;
-    });
+    const sorted = sortWindows(windows);
 
-    set({ windows: sorted });
+    set((state) => ({
+      windows: sorted,
+      windowsByTabId: { ...state.windowsByTabId, [tabId]: sorted },
+    }));
     return sorted;
   },
 
@@ -159,7 +204,14 @@ export const useStore = create<StoreState>((set, get) => ({
 
     await db.windows.add(window);
     await queueSync('windows', 'upsert', id, window as unknown as Record<string, unknown>);
-    set((state) => ({ windows: [...state.windows, window] }));
+    set((state) => {
+      const tabWindows = sortWindows([...(state.windowsByTabId[tabId] || []), window].filter(isVisibleWindow));
+      const showingThisTab = state.windows.length === 0 || state.windows.every((item) => item.tabId === tabId);
+      return {
+        windows: showingThisTab ? tabWindows : state.windows,
+        windowsByTabId: { ...state.windowsByTabId, [tabId]: tabWindows },
+      };
+    });
     return id;
   },
 
@@ -167,9 +219,20 @@ export const useStore = create<StoreState>((set, get) => ({
     const db = getDb();
     await db.windows.update(id, data);
     await queueSync('windows', 'upsert', id, data as Record<string, unknown>);
-    set((state) => ({
-      windows: state.windows.map((window) => (window.id === id ? { ...window, ...data } : window)),
-    }));
+    set((state) => {
+      const updateOne = (window: MoneyWindow) => (window.id === id ? { ...window, ...data } : window);
+      const windowsByTabId = Object.fromEntries(
+        Object.entries(state.windowsByTabId).map(([tabId, tabWindows]) => [
+          tabId,
+          sortWindows(tabWindows.map(updateOne).filter(isVisibleWindow)),
+        ])
+      );
+
+      return {
+        windows: sortWindows(state.windows.map(updateOne).filter(isVisibleWindow)),
+        windowsByTabId,
+      };
+    });
   },
 
   softDeleteWindow: async (id) => {
@@ -191,7 +254,15 @@ export const useStore = create<StoreState>((set, get) => ({
     await db.entries.where('windowId').equals(id).delete();
     await db.windows.delete(id);
     await queueSync('windows', 'delete', id);
-    set((state) => ({ windows: state.windows.filter((window) => window.id !== id) }));
+    set((state) => ({
+      windows: state.windows.filter((window) => window.id !== id),
+      windowsByTabId: Object.fromEntries(
+        Object.entries(state.windowsByTabId).map(([tabId, tabWindows]) => [
+          tabId,
+          tabWindows.filter((window) => window.id !== id),
+        ])
+      ),
+    }));
   },
 
   loadPersons: async (userId) => {

@@ -1,12 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, Settings, Archive, Trash2, LogOut, BookOpen } from 'lucide-react';
+import { Plus, Settings, Archive, Trash2, LogOut } from 'lucide-react';
 import BottomSheet from '@/components/ui/BottomSheet';
 import { useAuth } from '@/contexts/AuthContext';
 import { useStore } from '@/store/useStore';
-import type { Tab } from '@/lib/types';
 
 interface MoreDrawerProps {
   onClose: () => void;
@@ -14,19 +13,18 @@ interface MoreDrawerProps {
 
 export default function MoreDrawer({ onClose }: MoreDrawerProps) {
   const { user, signOut } = useAuth();
-  const { addTab, loadTabs } = useStore();
+  const { addTab, loadTabs, tabs } = useStore();
   const router = useRouter();
-  const [customTabs, setCustomTabs] = useState<Tab[]>([]);
   const [showAddTab, setShowAddTab] = useState(false);
   const [newTabName, setNewTabName] = useState('');
   const [newTabIcon, setNewTabIcon] = useState('📁');
   const [adding, setAdding] = useState(false);
 
+  const customTabs = useMemo(() => tabs.filter((tab) => tab.type === 'custom'), [tabs]);
+
   useEffect(() => {
     if (!user) return;
-    loadTabs(user.uid).then((tabs) => {
-      setCustomTabs(tabs.filter((t) => t.type === 'custom'));
-    });
+    loadTabs(user.uid);
   }, [user, loadTabs]);
 
   const handleNavigate = (href: string) => {
@@ -39,10 +37,9 @@ export default function MoreDrawer({ onClose }: MoreDrawerProps) {
     setAdding(true);
     try {
       const id = await addTab(user.uid, { name: newTabName.trim(), icon: newTabIcon });
-      const tabs = await loadTabs(user.uid);
-      setCustomTabs(tabs.filter((t) => t.type === 'custom'));
       setNewTabName('');
       setShowAddTab(false);
+      router.prefetch(`/tab?t=${id}`);
       handleNavigate(`/tab?t=${id}`);
     } finally {
       setAdding(false);

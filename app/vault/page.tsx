@@ -5,6 +5,7 @@ import { Plus, Search } from 'lucide-react';
 import AuthGuard from '@/components/auth/AuthGuard';
 import AppLayout from '@/components/layout/AppLayout';
 import Header from '@/components/layout/Header';
+import Loader from '@/components/ui/Loader';
 import { VaultCard } from '@/components/vault/VaultCard';
 import VaultForm from '@/components/vault/VaultForm';
 import Confirm from '@/components/ui/Confirm';
@@ -128,11 +129,7 @@ function VaultContent() {
       )}
 
       {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <p className="text-sm loading-pulse" style={{ color: 'var(--color-text-muted)' }}>
-            Loading vault…
-          </p>
-        </div>
+        <Loader label="Loading vault..." />
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
           <div className="text-5xl mb-4">🔐</div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Plus, Trash2 } from 'lucide-react';
 import AuthGuard from '@/components/auth/AuthGuard';
@@ -10,6 +10,7 @@ import WindowCard from '@/components/windows/WindowCard';
 import WindowView from '@/components/windows/WindowView';
 import BottomSheet from '@/components/ui/BottomSheet';
 import Confirm from '@/components/ui/Confirm';
+import Loader from '@/components/ui/Loader';
 import { useAuth } from '@/contexts/AuthContext';
 import { localGetEntries } from '@/lib/entries';
 import { useStore } from '@/store/useStore';
@@ -34,6 +35,8 @@ function TabContent() {
     loadTabs,
     loadWindows,
     persons,
+    tabs,
+    windowsByTabId,
     softDeleteWindow,
     updateWindow: updateWindowStore,
   } = useStore();
@@ -41,11 +44,19 @@ function TabContent() {
   const router = useRouter();
   const tabId = searchParams.get('t');
   const windowId = searchParams.get('w');
+  const cachedTab = useMemo(
+    () => (tabId ? tabs.find((item) => item.id === tabId) || null : null),
+    [tabId, tabs]
+  );
+  const cachedWindows = useMemo(
+    () => (tabId ? windowsByTabId[tabId] || [] : []),
+    [tabId, windowsByTabId]
+  );
 
-  const [tab, setTab] = useState<Tab | null>(null);
-  const [windows, setWindows] = useState<MoneyWindow[]>([]);
+  const [tab, setTab] = useState<Tab | null>(cachedTab);
+  const [windows, setWindows] = useState<MoneyWindow[]>(cachedWindows);
   const [windowStats, setWindowStats] = useState<Record<string, { total: number; count: number }>>({});
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!cachedTab);
   const [showAddSheet, setShowAddSheet] = useState(false);
   const [newWindowTitle, setNewWindowTitle] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<MoneyWindow | null>(null);
@@ -53,9 +64,29 @@ function TabContent() {
 
   const selectedWindow = windows.find((w) => w.id === windowId) || null;
 
+  useEffect(() => {
+    if (!tabId) return;
+    setTab(cachedTab);
+    if (windowsByTabId[tabId]) {
+      setWindows(cachedWindows);
+      setLoading(false);
+    }
+  }, [cachedTab, cachedWindows, tabId, windowsByTabId]);
+
   const load = useCallback(async () => {
     if (!user || !tabId) return;
-    setLoading(true);
+    const storeState = useStore.getState();
+    const cachedStoreTab = storeState.tabs.find((item) => item.id === tabId) || null;
+    const cachedStoreWindows = storeState.windowsByTabId[tabId];
+
+    if (cachedStoreTab && cachedStoreWindows) {
+      setTab(cachedStoreTab);
+      setWindows(cachedStoreWindows);
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
+
     try {
       const tabs = await loadTabs(user.uid);
       const t = tabs.find((x) => x.id === tabId) || null;
@@ -64,6 +95,7 @@ function TabContent() {
 
       const wins = await loadWindows(user.uid, tabId);
       setWindows(wins);
+      setLoading(false);
 
       const stats: Record<string, { total: number; count: number }> = {};
       await Promise.all(
@@ -174,9 +206,7 @@ function TabContent() {
       />
 
       {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <p className="text-sm loading-pulse" style={{ color: 'var(--color-text-muted)' }}>Loading…</p>
-        </div>
+        <Loader label="Loading tab..." />
       ) : windows.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
           <div className="text-5xl mb-4">{tab?.icon || '📁'}</div>
