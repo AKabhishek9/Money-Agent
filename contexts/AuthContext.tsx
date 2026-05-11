@@ -73,7 +73,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const r = await signInWithEmailAndPassword(auth, email, password);
       await initializeUserData(r.user.uid);
-      await prepareLocalData(r.user.uid);
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Sign in failed.';
       setError(friendlyError(msg));
@@ -87,7 +86,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const r = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(r.user, { displayName: name });
       await initializeUserData(r.user.uid);
-      await prepareLocalData(r.user.uid);
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Sign up failed.';
       setError(friendlyError(msg));
@@ -101,7 +99,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const provider = new GoogleAuthProvider();
       const r = await signInWithPopup(auth, provider);
       await initializeUserData(r.user.uid);
-      await prepareLocalData(r.user.uid);
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Google sign in failed.';
       setError(friendlyError(msg));

@@ -218,6 +218,7 @@ export default function LoginPage() {
 
         {/* Google sign in */}
         <button
+          type="button"
           onClick={handleGoogle}
           disabled={submitting}
           className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium transition-opacity"
