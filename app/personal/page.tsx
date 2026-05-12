@@ -319,7 +319,7 @@ function PersonalContent() {
         </div>
       </div>
 
-      {loading ? (    {loading ? (
+      {loading ? (
         <Loader label="Loading pages..." />
       ) : windows.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center py-20 px-6 text-center">
