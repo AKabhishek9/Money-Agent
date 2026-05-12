@@ -1,17 +1,17 @@
 import type { Metadata, Viewport } from 'next';
-import { JetBrains_Mono, Outfit } from 'next/font/google';
+import { Inter, Fira_Code } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/contexts/AuthContext';
 
-const outfit = Outfit({
+const inter = Inter({
   subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700'],
+  weight: ['400', '500', '600', '700'],
   variable: '--font-sans',
   display: 'swap',
   preload: true,
 });
 
-const jetbrainsMono = JetBrains_Mono({
+const firaCode = Fira_Code({
   subsets: ['latin'],
   weight: ['400', '500', '600'],
   variable: '--font-mono',
@@ -38,7 +38,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${outfit.variable} ${jetbrainsMono.variable}`}>
+    <html lang="en" className={`${inter.variable} ${firaCode.variable}`}>
       <body>
         <AuthProvider>{children}</AuthProvider>
       </body>

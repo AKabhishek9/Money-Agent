@@ -15,7 +15,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { localGetPersonEntries } from '@/lib/entries';
 import { formatAmount, calcTotal } from '@/lib/parser';
 import { useStore } from '@/store/useStore';
-import type { Person } from '@/lib/types';
+import type { Person, PersonEntry } from '@/lib/types';
 
 export default function PeoplePage() {
   return (
@@ -43,7 +43,7 @@ function PeopleContent() {
   const personId = searchParams.get('p');
 
   const [persons, setPersons] = useState<Person[]>(cachedPersons);
-  const [balances, setBalances] = useState<Record<string, { balance: number; count: number }>>({});
+  const [balances, setBalances] = useState<Record<string, { balance: number; count: number; recentEntries: PersonEntry[] }>>({});
   const [loading, setLoading] = useState(cachedPersons.length === 0);
   const [showAddSheet, setShowAddSheet] = useState(false);
   const [showEditSheet, setShowEditSheet] = useState<Person | null>(null);
@@ -73,13 +73,14 @@ function PeopleContent() {
     try {
       const pList = await loadPersons(user.uid);
       setPersons(pList);
-      const bal: Record<string, { balance: number; count: number }> = {};
+      const bal: Record<string, { balance: number; count: number; recentEntries: PersonEntry[] }> = {};
       await Promise.all(
         pList.map(async (p) => {
           const entries = await localGetPersonEntries(p.id);
           bal[p.id] = {
             balance: calcTotal(entries.map((e) => e.amount)),
             count: entries.length,
+            recentEntries: entries.slice(-5),
           };
         })
       );
@@ -111,6 +112,7 @@ function PeopleContent() {
               [person.id]: {
                 balance: calcTotal(entries.map((entry) => entry.amount)),
                 count: entries.length,
+                recentEntries: entries.slice(-5),
               },
             }));
           })
@@ -181,35 +183,28 @@ function PeopleContent() {
 
       {/* Combined total banner */}
       {persons.length > 0 && (
-        <div className="px-4 pt-4 pb-1">
+        <div className="px-4 pt-3 pb-2 shrink-0">
           <div
-            className="flex items-center justify-between gap-3 rounded-2xl p-4"
+            className="rounded-3xl px-5 py-4 flex items-center justify-between"
             style={{
               background: 'var(--color-surface)',
-              border: '1px solid var(--color-border-2)',
-              boxShadow: 'var(--shadow-card)',
+              border: '1px solid var(--color-border)',
+              boxShadow: 'var(--shadow-card-sm)',
             }}
           >
-            <div className="min-w-0">
-              <p className="text-balance-label mb-1">Combined net</p>
+            <div>
+              <p className="text-balance-label mb-1">Combined Net</p>
               <p
-                className="amount-mono text-xl font-bold leading-none tracking-tight"
+                className="amount-mono text-[1.5rem] font-bold leading-none tracking-tight"
                 style={{
-                  color:
-                    combinedBalance > 0
-                      ? 'var(--color-income)'
-                      : combinedBalance < 0
-                        ? 'var(--color-expense)'
-                        : 'var(--color-text)',
+                  color: combinedBalance === 0 ? 'var(--color-text-muted)' : combinedBalance > 0 ? 'var(--color-income)' : 'var(--color-expense)',
                 }}
               >
-                {formatAmount(combinedBalance)}
+                {combinedBalance === 0 ? '₹0' : formatAmount(combinedBalance)}
               </p>
             </div>
-            <div className="shrink-0 text-right">
-              <p className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>
-                {persons.length} {persons.length === 1 ? 'person' : 'people'}
-              </p>
+            <div className="h-10 w-10 flex items-center justify-center rounded-full bg-black/20" style={{ color: 'var(--color-text-muted)' }}>
+              <span className="text-xl">👥</span>
             </div>
           </div>
         </div>
@@ -228,22 +223,26 @@ function PeopleContent() {
           </p>
         </div>
       ) : (
-        <div className="flex-1 overflow-y-auto pt-3 pb-24">
-          {persons.map((p) => (
-            <PersonCard
-              key={p.id}
-              person={p}
-              balance={balances[p.id]?.balance ?? 0}
-              entryCount={balances[p.id]?.count ?? 0}
-              onClick={() => router.push(`/people?p=${p.id}`)}
-              onDelete={() => setDeleteTarget(p)}
-              onEdit={() => {
-                setNewName(p.name);
-                setNewNote(p.note || '');
-                setShowEditSheet(p);
-              }}
-            />
-          ))}
+        <div className="flex-1 overflow-y-auto pt-3 pb-24 px-4">
+          <div className="columns-2 sm:columns-3 md:columns-4 gap-3 space-y-3">
+            {persons.map((p) => (
+              <div key={p.id} className="break-inside-avoid">
+                <PersonCard
+                  person={p}
+                  balance={balances[p.id]?.balance ?? 0}
+                  entryCount={balances[p.id]?.count ?? 0}
+                  recentEntries={balances[p.id]?.recentEntries ?? []}
+                  onClick={() => router.push(`/people?p=${p.id}`)}
+                  onDelete={() => setDeleteTarget(p)}
+                  onEdit={() => {
+                    setNewName(p.name);
+                    setNewNote(p.note || '');
+                    setShowEditSheet(p);
+                  }}
+                />
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

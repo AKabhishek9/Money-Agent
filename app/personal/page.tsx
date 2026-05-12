@@ -16,7 +16,7 @@ import { ensureSystemData } from '@/lib/bootstrap';
 import { getDb } from '@/lib/db';
 import { localGetEntries } from '@/lib/entries';
 import { useStore } from '@/store/useStore';
-import type { Tab, MoneyWindow } from '@/lib/types';
+import type { Tab, MoneyWindow, Entry } from '@/lib/types';
 import { formatAmount } from '@/lib/parser';
 import { Archive } from 'lucide-react';
 
@@ -57,7 +57,7 @@ function PersonalContent() {
 
   const [personalTab, setPersonalTab] = useState<Tab | null>(cachedPersonalTab);
   const [windows, setWindows] = useState<MoneyWindow[]>(cachedPersonalWindows);
-  const [windowStats, setWindowStats] = useState<Record<string, { total: number; count: number }>>({});
+  const [windowStats, setWindowStats] = useState<Record<string, { total: number; count: number; recentEntries: Entry[] }>>({});
   const [loading, setLoading] = useState(!cachedPersonalTab);
   const [showAddSheet, setShowAddSheet] = useState(false);
   const [newWindowTitle, setNewWindowTitle] = useState('');
@@ -96,6 +96,7 @@ function PersonalContent() {
             [w.id]: {
               total: entries.reduce((sum, entry) => sum + entry.amount, 0),
               count: entries.length,
+              recentEntries: entries.slice(-5),
             },
           }));
         })
@@ -139,6 +140,7 @@ function PersonalContent() {
           [w.id]: {
             total: entries.reduce((s, e) => s + e.amount, 0),
             count: entries.length,
+            recentEntries: entries.slice(-5),
           },
         }));
       });
@@ -158,6 +160,7 @@ function PersonalContent() {
             [w.id]: {
               total: entries.reduce((s, e) => s + e.amount, 0),
               count: entries.length,
+              recentEntries: entries.slice(-5),
             },
           }));
         });
@@ -186,6 +189,7 @@ function PersonalContent() {
             [w.id]: {
               total: entries.reduce((s, e) => s + e.amount, 0),
               count: entries.length,
+              recentEntries: entries.slice(-5),
             },
           }));
         });
@@ -300,22 +304,27 @@ function PersonalContent() {
       {/* NET BALANCE card */}
       <div className="px-4 pt-3 pb-2 shrink-0">
         <div
-          className="rounded-2xl px-5 py-4 text-center"
+          className="rounded-3xl px-5 py-4 flex items-center justify-between"
           style={{
             background: 'var(--color-surface)',
-            border: '1px solid var(--color-border-2)',
-            boxShadow: 'var(--shadow-card)',
+            border: '1px solid var(--color-border)',
+            boxShadow: 'var(--shadow-card-sm)',
           }}
         >
-          <p className="text-balance-label mb-2">Total Personal Balance</p>
-          <p
-            className="amount-mono text-[2rem] font-bold leading-none tracking-tight"
-            style={{
-              color: globalTotalBalance === 0 ? 'var(--color-text-muted)' : globalTotalBalance > 0 ? 'var(--color-income)' : 'var(--color-expense)',
-            }}
-          >
-            {globalTotalBalance === 0 ? '₹0' : formatAmount(globalTotalBalance)}
-          </p>
+          <div>
+            <p className="text-balance-label mb-1">Total Balance</p>
+            <p
+              className="amount-mono text-[1.5rem] font-bold leading-none tracking-tight"
+              style={{
+                color: globalTotalBalance === 0 ? 'var(--color-text-muted)' : globalTotalBalance > 0 ? 'var(--color-income)' : 'var(--color-expense)',
+              }}
+            >
+              {globalTotalBalance === 0 ? '₹0' : formatAmount(globalTotalBalance)}
+            </p>
+          </div>
+          <div className="h-10 w-10 flex items-center justify-center rounded-full bg-black/20" style={{ color: 'var(--color-text-muted)' }}>
+            <span className="text-xl">💰</span>
+          </div>
         </div>
       </div>
 
@@ -332,23 +341,27 @@ function PersonalContent() {
           </p>
         </div>
       ) : (
-        <div className="flex-1 overflow-y-auto pt-4 pb-24">
-          {windows.map((w) => (
-            <WindowCard
-              key={w.id}
-              window={w}
-              total={windowStats[w.id]?.total ?? 0}
-              entryCount={windowStats[w.id]?.count ?? 0}
-              onClick={() => router.push(`/personal?w=${w.id}`)}
-              onPin={() => handlePin(w)}
-              onArchive={() => handleArchive(w)}
-              onDelete={() => setDeleteTarget(w)}
-              onRename={() => {
-                setRenameTitle(w.title);
-                setRenameTarget(w);
-              }}
-            />
-          ))}
+        <div className="flex-1 overflow-y-auto pt-3 pb-24 px-4">
+          <div className="columns-2 sm:columns-3 md:columns-4 gap-3 space-y-3">
+            {windows.map((w) => (
+              <div key={w.id} className="break-inside-avoid">
+                <WindowCard
+                  window={w}
+                  total={windowStats[w.id]?.total ?? 0}
+                  entryCount={windowStats[w.id]?.count ?? 0}
+                  recentEntries={windowStats[w.id]?.recentEntries ?? []}
+                  onClick={() => router.push(`/personal?w=${w.id}`)}
+                  onPin={() => handlePin(w)}
+                  onArchive={() => handleArchive(w)}
+                  onDelete={() => setDeleteTarget(w)}
+                  onRename={() => {
+                    setRenameTitle(w.title);
+                    setRenameTarget(w);
+                  }}
+                />
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
