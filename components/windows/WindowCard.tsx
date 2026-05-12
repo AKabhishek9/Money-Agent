@@ -65,6 +65,11 @@ export default function WindowCard({
         {/* Recent Entries preview */}
         {recentEntries && recentEntries.length > 0 && (
           <div className="flex flex-col gap-1.5 mb-4 w-full opacity-80">
+            {entryCount > recentEntries.length && (
+              <span className="text-[0.65rem] mb-0.5" style={{ color: 'var(--color-text-dim)' }}>
+                {entryCount - recentEntries.length} earlier entries...
+              </span>
+            )}
             {recentEntries.map((entry) => (
               <div key={entry.id} className="flex flex-col text-xs leading-tight">
                 <span className="truncate" style={{ color: 'var(--color-text-muted)' }}>
@@ -73,11 +78,6 @@ export default function WindowCard({
                 </span>
               </div>
             ))}
-            {entryCount > recentEntries.length && (
-              <span className="text-[0.65rem] mt-1" style={{ color: 'var(--color-text-dim)' }}>
-                ... and {entryCount - recentEntries.length} more
-              </span>
-            )}
           </div>
         )}
 
