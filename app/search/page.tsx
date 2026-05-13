@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Search, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import AuthGuard from '@/components/auth/AuthGuard';
@@ -42,34 +42,35 @@ function SearchContent() {
   const [searched, setSearched] = useState(false);
   const [allResults, setAllResults] = useState<SearchResult[] | null>(null);
 
+  // Pre-warm the search pool on mount
+  useEffect(() => {
+    if (user?.uid) {
+      loadSearchResults(user.uid).then(setAllResults).catch(() => undefined);
+    }
+  }, [user]);
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const doSearch = useCallback(
-    debounce(async (q: unknown, entries: unknown) => {
+    debounce((q: unknown, pool: unknown) => {
       const queryStr = q as string;
-      const resultPool = entries as SearchResult[] | null;
-      if (!queryStr.trim()) { setResults([]); setSearched(false); return; }
-
-      let pool = resultPool;
-      if (!pool) {
-        setLoading(true);
-        try {
-          pool = await loadSearchResults(user!.uid);
-          setAllResults(pool);
-        } finally {
-          setLoading(false);
-        }
+      const resultPool = pool as SearchResult[] | null;
+      
+      if (!queryStr.trim()) { 
+        setResults([]); 
+        setSearched(false); 
+        return; 
       }
 
       const lower = queryStr.toLowerCase();
-      const filtered = (pool || []).filter(
+      const filtered = (resultPool || []).filter(
         (result) =>
           result.searchText.includes(lower) ||
           (result.amount !== undefined && String(Math.abs(result.amount)).includes(lower))
       );
       setResults(filtered);
       setSearched(true);
-    }, 400),
-    [user]
+    }, 200),
+    []
   );
 
   const handleChange = (val: string) => {

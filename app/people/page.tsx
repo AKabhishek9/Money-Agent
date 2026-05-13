@@ -244,9 +244,9 @@ function PeopleContent() {
         </div>
       ) : (
         <div className="flex-1 overflow-y-auto pt-3 pb-24 px-4">
-          <div className="columns-2 sm:columns-3 md:columns-4 gap-3 space-y-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             {persons.map((p) => (
-              <div key={p.id} className="break-inside-avoid">
+              <div key={p.id}>
                 <PersonCard
                   person={p}
                   balance={balances[p.id]?.balance ?? 0}

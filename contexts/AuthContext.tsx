@@ -22,6 +22,7 @@ import {
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { ensureSystemData } from '@/lib/bootstrap';
+import { getDb } from '@/lib/db';
 
 import {
   incrementalSync,
@@ -77,7 +78,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Official user found
         localStorage.setItem('money_ledger_last_uid', u.uid);
         await prepareLocalData(u.uid);
-        startRealtimeSync(u.uid);
+        // NOTE: startRealtimeSync is now called inside prepareLocalData's
+        // background block AFTER incrementalSync completes, to avoid the
+        // initial onSnapshot firing simultaneously with the sync query.
       } else {
         // No official user
         stopRealtimeSync();
@@ -159,6 +162,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = useCallback(async () => {
     setError(null);
     stopRealtimeSync();
+    // Flush any pending offline writes before wiping local data
+    if (navigator.onLine) {
+      await processSyncQueue().catch(() => undefined);
+    }
     await firebaseSignOut(auth);
     await clearLocalData();
     useStore.getState().reset();
@@ -190,29 +197,45 @@ export function useAuth() {
  * 5. Purge recycle-bin items older than 30 days (fire-and-forget)
  */
 async function prepareLocalData(userId: string): Promise<void> {
-  // 1. Ensure system data exists locally FIRST
-  await ensureSystemData(userId);
+  const db = await import('@/lib/db').then((m) => m.getDb());
+  const hasLocalData = (await db.tabs.where('userId').equals(userId).count()) > 0;
 
-  // 2. Populate Zustand from Dexie — UI renders instantly from here
-  await useStore.getState().init(userId);
+  if (hasLocalData) {
+    // Returning device — show local data instantly from Dexie
+    await useStore.getState().init(userId);
+  }
+  // New device: don't show anything yet — wait for sync below
 
-  // 3. Run all network sync in the background
+  // All network work runs in background — never blocks the UI
   (async () => {
-    // Push pending local writes first
+    // Step 1: push any pending local writes first
     try {
       await processSyncQueue();
     } catch {
-      // Non-fatal — offline scenario
+      // offline — fine
     }
 
-    // Incremental delta sync (or full hydration if first login on this device)
+    // Step 2: sync from Firestore
+    // New device  → fullHydrateFromFirestore (all docs)
+    // Old device  → delta sync (only changed docs since lastSyncTime)
     try {
       await incrementalSync(userId);
     } catch {
-      // Non-fatal — local data still valid
+      // offline — local data still valid
     }
 
-    // Purge old bin items
+    // Step 3: AFTER sync, create system defaults if needed
+    // Doing this after sync means we never duplicate tabs that already exist in Firestore
+    await ensureSystemData(userId);
+
+    // Step 4: refresh Zustand with the fully synced Dexie state
+    await useStore.getState().init(userId);
+
+    // Step 4b: start realtime listeners AFTER initial sync
+    // This prevents the initial onSnapshot from doing duplicate work
+    startRealtimeSync(userId);
+
+    // Step 5: cleanup
     purgeExpiredBinItems(userId).catch(() => undefined);
   })();
 }

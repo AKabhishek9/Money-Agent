@@ -106,6 +106,7 @@ export default function WindowView({ window: w, userId, persons }: WindowViewPro
         rawText: `${note || rawText} (from ${w.title})`,
         amount: -amount,
         note: note || rawText,
+        type: amount < 0 ? 'income' : 'expense',
         entryDate,
         linkedEntryId: entry.id,
         linkedWindowId: w.id,

@@ -226,15 +226,15 @@ async function fullHydrateFromFirestore(userId: string): Promise<void> {
  * • New device  (lastSync == null) → full hydration, saves lastSyncTime
  * • Existing    (lastSync exists)  → only fetch docs where updatedAt > lastSyncTime
  */
-export async function incrementalSync(userId: string): Promise<void> {
-  if (typeof window === 'undefined' || !navigator.onLine) return;
+export async function incrementalSync(userId: string): Promise<boolean> {
+  if (typeof window === 'undefined' || !navigator.onLine) return false;
 
   const lastSyncTime = await getLastSyncTime();
 
   if (!lastSyncTime) {
     // ── NEW DEVICE: full hydration once ──
     await fullHydrateFromFirestore(userId);
-    return;
+    return true;
   }
 
   // ── EXISTING DEVICE: delta sync ──
@@ -266,13 +266,14 @@ export async function incrementalSync(userId: string): Promise<void> {
   );
 
   await saveLastSyncTime(syncedAt);
+  return false;
 }
 
 /**
  * Legacy wrapper kept for any call sites that still use hydrateFromFirestore.
  * Routes to incrementalSync internally.
  */
-export async function hydrateFromFirestore(userId: string): Promise<void> {
+export async function hydrateFromFirestore(userId: string): Promise<boolean> {
   return incrementalSync(userId);
 }
 

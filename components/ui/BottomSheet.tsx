@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 
 interface BottomSheetProps {
@@ -17,11 +17,41 @@ export default function BottomSheet({ title, onClose, children, height = 'auto' 
     return () => { document.body.style.overflow = ''; };
   }, []);
 
+  const [startY, setStartY] = useState<number | null>(null);
+  const [currentY, setCurrentY] = useState<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setStartY(e.touches[0].clientY);
+    setCurrentY(null);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (startY === null) return;
+    const y = e.touches[0].clientY;
+    if (y > startY) {
+      // Prevent scrolling the body underneath if we're swiping down
+      // Actually, just record the Y
+      setCurrentY(y);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (startY !== null && currentY !== null) {
+      if (currentY - startY > 50) {
+        onClose();
+      }
+    }
+    setStartY(null);
+    setCurrentY(null);
+  };
+
   const heights = {
     auto: 'max-h-[90dvh]',
     full: 'h-[90dvh]',
     half: 'h-[50dvh]',
   };
+
+  const deltaY = (currentY !== null && startY !== null) ? currentY - startY : 0;
 
   return (
     <div
@@ -31,9 +61,14 @@ export default function BottomSheet({ title, onClose, children, height = 'auto' 
     >
       <div
         className={`flex flex-col rounded-t-[1.35rem] animate-slide-up shadow-2xl ${heights[height]}`}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
         style={{
           background: 'var(--color-surface)',
           borderTop: '1px solid color-mix(in oklab, var(--color-border) 80%, transparent)',
+          transform: deltaY > 0 ? `translateY(${deltaY}px)` : 'translateY(0)',
+          transition: currentY === null ? 'transform 0.2s ease-out' : 'none',
         }}
       >
         {/* Handle bar */}

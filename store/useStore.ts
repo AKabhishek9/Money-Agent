@@ -372,15 +372,39 @@ export const useStore = create<StoreState>((set, get) => ({
 
   deletePerson: async (id) => {
     const db = getDb();
-    const personEntries = await db.personEntries.where('personId').equals(id).toArray();
 
+    // Step 1: clear linkedPersonId from any window entries referencing this person
+    const linkedWindowEntries = await db.entries
+      .where('linkedPersonId')
+      .equals(id)
+      .toArray();
+
+    for (const entry of linkedWindowEntries) {
+      const now = new Date();
+      await db.entries.update(entry.id, {
+        linkedPersonId: undefined,
+        linkedPersonName: undefined,
+        updatedAt: now,
+      });
+      await queueSync('entries', 'upsert', entry.id, {
+        id: entry.id,
+        linkedPersonId: undefined,
+        linkedPersonName: undefined,
+        updatedAt: now,
+      });
+    }
+
+    // Step 2: delete all person ledger entries
+    const personEntries = await db.personEntries.where('personId').equals(id).toArray();
     for (const entry of personEntries) {
       await queueSync('personEntries', 'delete', entry.id);
     }
-
     await db.personEntries.where('personId').equals(id).delete();
+
+    // Step 3: delete the person
     await db.persons.delete(id);
     await queueSync('persons', 'delete', id);
+
     set((state) => ({
       persons: state.persons.filter((person) => person.id !== id),
     }));

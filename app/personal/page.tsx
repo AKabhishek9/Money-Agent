@@ -96,7 +96,7 @@ function PersonalContent() {
             [w.id]: {
               total: entries.reduce((sum, entry) => sum + entry.amount, 0),
               count: entries.length,
-              recentEntries: entries.slice(-5),
+              recentEntries: [...entries].reverse().slice(0, 5),
             },
           }));
         })
@@ -140,7 +140,7 @@ function PersonalContent() {
           [w.id]: {
             total: entries.reduce((s, e) => s + e.amount, 0),
             count: entries.length,
-            recentEntries: entries.slice(-5),
+            recentEntries: [...entries].reverse().slice(0, 5),
           },
         }));
       });
@@ -160,7 +160,7 @@ function PersonalContent() {
             [w.id]: {
               total: entries.reduce((s, e) => s + e.amount, 0),
               count: entries.length,
-              recentEntries: entries.slice(-5),
+              recentEntries: [...entries].reverse().slice(0, 5),
             },
           }));
         });
@@ -189,7 +189,7 @@ function PersonalContent() {
             [w.id]: {
               total: entries.reduce((s, e) => s + e.amount, 0),
               count: entries.length,
-              recentEntries: entries.slice(-5),
+              recentEntries: [...entries].reverse().slice(0, 5),
             },
           }));
         });
@@ -340,7 +340,7 @@ function PersonalContent() {
         <div className="flex-1 overflow-y-auto pt-3 pb-24 px-4">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             {windows.map((w) => (
-              <div key={w.id} className="break-inside-avoid">
+              <div key={w.id}>
                 <WindowCard
                   window={w}
                   total={windowStats[w.id]?.total ?? 0}
