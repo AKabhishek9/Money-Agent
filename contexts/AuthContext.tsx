@@ -224,12 +224,11 @@ async function prepareLocalData(userId: string): Promise<void> {
       // offline — local data still valid
     }
 
-    // Step 3: AFTER sync, create system defaults if needed
-    // Doing this after sync means we never duplicate tabs that already exist in Firestore
-    await ensureSystemData(userId);
-
-    // Step 4: refresh Zustand with the fully synced Dexie state
+    // Step 3: refresh Zustand with the fully synced Dexie state FIRST
     await useStore.getState().init(userId);
+
+    // Step 4: THEN create system defaults — reads hydrated Dexie, won't duplicate
+    await ensureSystemData(userId);
 
     // Step 4b: start realtime listeners AFTER initial sync
     // This prevents the initial onSnapshot from doing duplicate work

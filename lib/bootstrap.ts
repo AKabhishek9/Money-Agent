@@ -22,6 +22,13 @@ export async function ensureSystemData(userId: string): Promise<void> {
     let personalTab = existingTabs.find((tab) => tab.type === 'personal');
 
     if (!personalTab) {
+      // Double-check DB — Firestore hydration may have just populated it
+      // This prevents creating a duplicate tab when site data was cleared
+      const recheckTabs = await db.tabs.where('userId').equals(userId).toArray();
+      personalTab = recheckTabs.find((tab) => tab.type === 'personal');
+    }
+
+    if (!personalTab) {
       personalTab = {
         id: uuid(),
         userId,
