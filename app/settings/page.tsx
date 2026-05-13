@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { LogOut, Shield, Info, ChevronRight, BookOpen, Archive } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import AuthGuard from '@/components/auth/AuthGuard';
@@ -29,6 +29,21 @@ function SettingsContent() {
     await signOut();
     router.replace('/login');
   };
+
+  const [isOnline, setIsOnline] = useState(
+    typeof window !== 'undefined' ? navigator.onLine : true
+  );
+
+  useEffect(() => {
+    const on = () => setIsOnline(true);
+    const off = () => setIsOnline(false);
+    window.addEventListener('online', on);
+    window.addEventListener('offline', off);
+    return () => {
+      window.removeEventListener('online', on);
+      window.removeEventListener('offline', off);
+    };
+  }, []);
 
   return (
     <div>
@@ -83,8 +98,8 @@ function SettingsContent() {
             {
               icon: <Shield size={18} />,
               label: 'Offline Mode',
-              value: 'Active',
-              valueColor: 'var(--color-income)',
+              value: isOnline ? 'Connected' : 'Offline Mode',
+              valueColor: isOnline ? 'var(--color-income)' : 'var(--color-expense)',
             },
             {
               icon: <Info size={18} />,

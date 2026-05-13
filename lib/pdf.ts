@@ -102,7 +102,7 @@ export async function exportWindowToPDF(windowTitle: string, entries: Entry[]): 
   let currentPage = page;
   let y = drawHeader(currentPage, 762, boldFont, pageWidth, columns, margin);
 
-  for (const entry of [...computeRunningBalance(entries)].reverse()) {
+  for (const entry of computeRunningBalance(entries)) {
     if (y < 60) {
       currentPage = pdfDoc.addPage([595, 842]);
       y = drawHeader(currentPage, 800, boldFont, pageWidth, columns, margin);
@@ -181,7 +181,7 @@ export async function exportPersonToPDF(personName: string, entries: PersonEntry
   let currentPage = page;
   let y = drawHeader(currentPage, 762, boldFont, pageWidth, columns, margin);
 
-  for (const entry of [...computeRunningBalance(entries)].reverse()) {
+  for (const entry of computeRunningBalance(entries)) {
     if (y < 60) {
       currentPage = pdfDoc.addPage([595, 842]);
       y = drawHeader(currentPage, 800, boldFont, pageWidth, columns, margin);

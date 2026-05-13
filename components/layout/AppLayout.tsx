@@ -36,10 +36,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <div className="flex h-[100dvh] flex-col overflow-hidden" style={{ background: 'var(--color-bg)' }}>
       {!isOnline && (
         <div
-          className="text-center text-xs py-1.5 font-medium"
-          style={{ background: 'var(--color-surface-2)', color: 'var(--color-text-muted)' }}
+          className="text-center text-[10px] py-1 font-medium px-4 leading-tight"
+          style={{ background: 'var(--color-surface-2)', color: 'var(--color-text-muted)', borderBottom: '1px solid var(--color-border)' }}
         >
-          Offline - entries saved locally, will sync when connected
+          You are offline. Entries will be saved locally and synced when you reconnect.
         </div>
       )}
       <main
