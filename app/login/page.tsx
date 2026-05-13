@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Eye, EyeOff, Mail, Lock, User, ArrowRight } from 'lucide-react';
+import { useStore } from '@/store/useStore';
 
 export default function LoginPage() {
   const { user, loading, error, signIn, signUp, signInWithGoogle, resetPassword, clearError } = useAuth();
@@ -17,9 +18,13 @@ export default function LoginPage() {
   const [localError, setLocalError] = useState('');
   const [resetSent, setResetSent] = useState(false);
 
+  const storeUserId = useStore((s) => s.userId);
+
   useEffect(() => {
-    if (!loading && user) router.replace('/personal');
-  }, [user, loading, router]);
+    if ((!loading && user) || storeUserId) {
+      router.replace('/personal');
+    }
+  }, [user, loading, router, storeUserId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,7 +82,7 @@ export default function LoginPage() {
 
   const displayError = localError || error;
 
-  if (loading) {
+  if (loading && !storeUserId) {
     return (
       <div className="flex items-center justify-center min-h-screen" style={{ background: 'var(--color-bg)' }}>
         <div className="loading-pulse text-2xl">💰</div>

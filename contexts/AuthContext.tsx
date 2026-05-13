@@ -54,17 +54,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // 1. FAST-PATH: If we have a cached UID and are offline (or just to be fast), 
+    // we can try to "peek" at the local data immediately.
+    const cachedUid = localStorage.getItem('money_ledger_last_uid');
+    let fastPathTriggered = false;
+
+    if (cachedUid) {
+      fastPathTriggered = true;
+      prepareLocalData(cachedUid).catch(() => undefined);
+      // We don't setLoading(false) yet, we wait for official Firebase or timeout
+    }
+
+    // 2. TIMEOUT SAFETY: If auth takes too long, stop the loader.
+    const timeoutId = setTimeout(() => {
+      setLoading(false);
+    }, 2500); // 2.5s is a generous buffer for slow network
+
     const unsub = onAuthStateChanged(auth, async (u) => {
-      setLoading(true);
+      clearTimeout(timeoutId);
 
       if (u) {
+        // Official user found
+        localStorage.setItem('money_ledger_last_uid', u.uid);
         await prepareLocalData(u.uid);
-        // Start real-time listeners so changes from other devices appear live.
-        // Realtime listeners now patch only changed documents — no full reload.
         startRealtimeSync(u.uid);
       } else {
+        // No official user
         stopRealtimeSync();
         useStore.getState().reset();
+        // If we were using a fast-path UID but it turns out we are logged out,
+        // we should stop pretending we are logged in.
+        if (fastPathTriggered) {
+          localStorage.removeItem('money_ledger_last_uid');
+        }
       }
 
       setUser((prev) => {
@@ -76,6 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const cleanupSync = setupSyncListener();
     return () => {
+      clearTimeout(timeoutId);
       unsub();
       cleanupSync();
       stopRealtimeSync();
