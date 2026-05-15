@@ -77,10 +77,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (u) {
         // Official user found
         localStorage.setItem('money_ledger_last_uid', u.uid);
-        await prepareLocalData(u.uid);
-        // NOTE: startRealtimeSync is now called inside prepareLocalData's
-        // background block AFTER incrementalSync completes, to avoid the
-        // initial onSnapshot firing simultaneously with the sync query.
+        try {
+          await prepareLocalData(u.uid);
+        } catch (err) {
+          console.error('Failed to prepare local data:', err);
+        }
       } else {
         // No official user
         stopRealtimeSync();

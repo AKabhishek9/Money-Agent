@@ -6,6 +6,7 @@ import {
   deleteField,
   doc,
   getDocs,
+  getDocsFromServer,
   onSnapshot,
   query,
   setDoc,
@@ -192,30 +193,45 @@ export async function processSyncQueue(): Promise<void> {
 async function fullHydrateFromFirestore(userId: string): Promise<void> {
   const db = getDb();
   const syncedAt = new Date();
+  let atLeastOneSynced = false;
 
   await Promise.allSettled(
     SYNC_COLLECTIONS.map(async (collectionName) => {
-      try {
-        const q = query(
-          collection(firestoreDb, collectionName),
-          where('userId', '==', userId)
-        );
-        const snapshot = await getDocs(q);
-        if (snapshot.empty) return;
+      let attempts = 0;
+      while (attempts < 3) {
+        attempts++;
+        try {
+          const q = query(
+            collection(firestoreDb, collectionName),
+            where('userId', '==', userId)
+          );
+          // getDocsFromServer bypasses Firestore's local IndexedDB cache.
+          // Essential when user clears browser data — cache is wiped but
+          // getDocs would return empty instead of fetching from server.
+          const snapshot = await getDocsFromServer(q);
+          if (snapshot.empty) break;
 
-        const records = snapshot.docs.map((snapshotDoc) =>
-          fromFirestore(snapshotDoc.data(), snapshotDoc.id)
-        );
-        const table = db.table(collectionName) as Table<Record<string, unknown>, string>;
-        await table.bulkPut(records);
-      } catch (err) {
-        console.warn(`Full hydration failed for ${collectionName}:`, err);
+          const records = snapshot.docs.map((d) => fromFirestore(d.data(), d.id));
+          const table = db.table(collectionName) as Table<Record<string, unknown>, string>;
+          await table.bulkPut(records);
+          atLeastOneSynced = true;
+          break;
+        } catch (err) {
+          console.warn(`Hydration attempt ${attempts}/3 failed for ${collectionName}:`, err);
+          if (attempts < 3) {
+            await new Promise((r) => setTimeout(r, attempts * 1500));
+          }
+        }
       }
     })
   );
 
-  // Mark this device as fully hydrated
-  await saveLastSyncTime(syncedAt);
+  // Only mark synced if at least one collection returned real data.
+  // If all failed (offline/blocked), don't save lastSyncTime so next
+  // app open tries full hydration again instead of delta sync.
+  if (atLeastOneSynced) {
+    await saveLastSyncTime(syncedAt);
+  }
 }
 
 // ── Incremental Delta Sync (existing device) ──────────────────────────────────
@@ -461,4 +477,7 @@ export async function clearLocalData(): Promise<void> {
     db.syncQueue.clear(),
     db.lastSync.clear(),
   ]);
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('money_ledger_last_uid');
+  }
 }

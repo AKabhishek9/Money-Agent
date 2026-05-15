@@ -4,6 +4,7 @@ import { getDb } from '@/lib/db';
 import { queueSync } from '@/lib/sync';
 import { v4 as uuid } from 'uuid';
 import { getMonthKey, getMonthWindowTitle } from '@/lib/utils';
+import { useStore } from '@/store/useStore';
 
 const bootstrapPromises = new Map<string, Promise<void>>();
 
@@ -30,7 +31,7 @@ export async function ensureSystemData(userId: string): Promise<void> {
 
     if (!personalTab) {
       personalTab = {
-        id: uuid(),
+        id: `personal-${userId}`, // Maintain deterministic ID logic
         userId,
         name: 'Personal',
         icon: '📓',
@@ -44,6 +45,7 @@ export async function ensureSystemData(userId: string): Promise<void> {
       };
 
       await db.tabs.add(personalTab);
+      useStore.getState().patchTab(personalTab);
       await queueSync(
         'tabs',
         'upsert',
@@ -78,6 +80,7 @@ export async function ensureSystemData(userId: string): Promise<void> {
       };
 
       await db.windows.add(monthWindow);
+      useStore.getState().patchWindow(monthWindow);
       await queueSync(
         'windows',
         'upsert',
